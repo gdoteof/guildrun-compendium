@@ -1,6 +1,7 @@
 export * from "./types.js";
 export { parseStage } from "./stage.js";
-export { parseGuildrunLogs, parseLines, type LogFile } from "./parse.js";
+export { parseGuildrunLogs, parseLines, parseLine, type LogFile } from "./parse.js";
+export { RunAssembler } from "./assembler.js";
 export {
   snapshotBattle, diffSnapshots,
   type BattleSnapshot, type HeroSnapshot, type SnapshotDiff,

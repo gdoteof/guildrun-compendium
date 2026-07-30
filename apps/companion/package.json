@@ -1,0 +1,28 @@
+{
+  "name": "@guildrun/companion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "guildrun-companion": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build:linux": "pnpm gen:ui && bun build --compile --target=bun-linux-x64 src/index.ts --outfile dist/guildrun-companion-linux-x64",
+    "build:mac": "pnpm gen:ui && bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile dist/guildrun-companion-macos-arm64",
+    "build:win": "pnpm gen:ui && bun build --compile --target=bun-windows-x64 src/index.ts --outfile dist/guildrun-companion-windows-x64.exe",
+    "gen:ui": "node -e \"const{readFileSync,writeFileSync}=require('fs');writeFileSync('src/ui-embedded.ts','// GENERATED from ui/index.html - regenerate with: pnpm gen:ui\\n// Embedded so compiled single-file binaries need no files on disk;\\n// dev runs still prefer the live ui/index.html when present.\\nexport const UI_HTML = '+JSON.stringify(readFileSync('ui/index.html','utf-8'))+';\\n')\""
+  },
+  "dependencies": {
+    "@guildrun/parser": "workspace:*",
+    "@msgpack/msgpack": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

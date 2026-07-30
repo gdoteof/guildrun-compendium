@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guildrun Companion</title>
+<style>
+/* Trimmed copy of the compendium's validated palette (see apps/worker/public/style.css) */
+:root {
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --border:rgba(11,11,11,.1); --accent:#2a78d6; --good:#006300; --bad:#d03b3b;
+  --tier-S:#104281; --tier-A:#1c5cab; --tier-B:#2a78d6; --tier-C:#5598e7; --tier-D:#86b6ef;
+  --tier-ink-S:#fff; --tier-ink-A:#fff; --tier-ink-B:#fff; --tier-ink-C:#fff; --tier-ink-D:#0b0b0b;
+  --rar-Epic:#8a3612; --rar-Rare:#d95926; --rar-Common:#f0916b;
+}
+@media (prefers-color-scheme: dark) { :root {
+  color-scheme: dark;
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --border:rgba(255,255,255,.1); --accent:#3987e5; --good:#0ca30c; --bad:#e66767;
+  --tier-S:#b7d3f6; --tier-A:#86b6ef; --tier-B:#5598e7; --tier-C:#256abf; --tier-D:#184f95;
+  --tier-ink-S:#0b0b0b; --tier-ink-A:#0b0b0b; --tier-ink-B:#0b0b0b; --tier-ink-C:#fff; --tier-ink-D:#fff;
+  --rar-Epic:#f7b697; --rar-Rare:#eb6834; --rar-Common:#a8431a;
+}}
+*{box-sizing:border-box} body{margin:0;background:var(--page);color:var(--ink);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:1rem 1.2rem}
+h1{font-size:1.05rem;margin:0 0 2px} .small{color:var(--muted);font-size:.82rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:.8rem 0}
+.badge{display:inline-block;min-width:1.5em;text-align:center;border-radius:5px;padding:0 5px;font-weight:650;font-size:.82rem}
+.rar{font-size:.78rem;font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.pill{background:var(--page);border:1px solid var(--grid);border-radius:999px;padding:1px 10px;font-size:.85rem}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+td,th{padding:4px 8px;border-bottom:1px solid var(--grid);text-align:left}
+th{color:var(--muted);font-weight:500;font-size:.78rem}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+#status{position:fixed;top:10px;right:14px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:5px}
+.dot.ok{background:var(--good)}
+details summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+pre{font-size:.75rem;overflow-x:auto;background:var(--page);padding:8px;border-radius:6px}
+</style>
+</head>
+<body>
+<span id="status" class="small"><span class="dot"></span>connecting</span>
+<h1>Guildrun Companion</h1>
+<p class="small" id="meta">waiting for data…</p>
+<div id="app"></div>
+
+<script>
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const tierB = (t) => t
+  ? `<span class="badge" style="background:var(--tier-${esc(t.tier)});color:var(--tier-ink-${esc(t.tier)})"
+       title="lift ${t.lift?.toFixed(2)}x, ${t.n_runs} runs">${esc(t.tier)}</span>` : "";
+const rar = (r) => r ? `<span class="rar" style="color:var(--rar-${esc(r)})">${esc(r[0])}</span>` : "";
+const RANKS = { 1:"C", 2:"B", 3:"A", 4:"S" };
+
+function render(s) {
+  const t = (type, ref) => tierB(s.tiers?.[type]?.[ref]);
+  const meta = document.getElementById("meta");
+  meta.textContent = `${s.tailer.activeFile ?? "no log yet"} · ${s.tailer.mode} · ` +
+    (s.live.in_run
+      ? `in run (difficulty ${s.live.run?.difficulty ?? "?"}, floor ${s.live.run?.current_floor ?? "?"})`
+      : "not in a run");
+
+  let html = "";
+  if (s.live.run) {
+    const r = s.live.run;
+    html += `<div class="card"><div class="row">
+      <span class="pill">difficulty ${r.difficulty ?? "?"}</span>
+      <span class="pill">floor ${r.current_floor ?? "–"}${r.stage_kind === "endless" ? " (endless)" : ""}</span>
+      <span class="pill">${r.battles_won}W–${r.battles_lost}L</span>
+      <span class="pill">${s.live.shards ?? "?"} shards</span>
+      ${r.beaten_so_far ? '<span class="pill" style="color:var(--good)">BEATEN</span>' : ""}
+      ${!s.live.in_run ? '<span class="pill">run over</span>' : ""}
+    </div></div>`;
+  }
+
+  if (s.names.party.length) {
+    html += `<div class="card"><table><thead><tr><th></th><th>hero</th><th>rank</th><th>items</th></tr></thead><tbody>` +
+      s.names.party.map((h) => `<tr>
+        <td>${t("hero", h.ref)}</td>
+        <td>${esc(h.name)}</td>
+        <td>${RANKS[h.rank] ?? "?"}</td>
+        <td>${h.items.map((i) => `${t("item", i.ref)} ${esc(i.name)} ${rar(i.rarity)}`).join(" · ") || '<span class="small">–</span>'}</td>
+      </tr>`).join("") + `</tbody></table></div>`;
+  }
+
+  if (s.live.shop?.open) {
+    html += `<div class="card"><strong style="font-size:.9rem">Shop open</strong>`;
+    if (s.names.sales.length) {
+      html += `<table><thead><tr><th></th><th>on sale</th><th>type</th></tr></thead><tbody>` +
+        s.names.sales.map((x) => `<tr>
+          <td>${x.ref ? t(x.kind, x.ref) : ""}</td><td>${esc(x.name)}</td><td class="small">${esc(x.kind)}</td>
+        </tr>`).join("") + `</tbody></table>`;
+    } else {
+      html += `<p class="small">No sale offers this shop. (Regular offers aren't in the logs — only sales are named.)</p>`;
+    }
+    html += `</div>`;
+  }
+
+  if (s.names.relics.length) {
+    html += `<div class="card"><span class="small">relics (${s.names.relics.length})</span><br>` +
+      s.names.relics.map((r) => `${t("relic", r.ref)} ${esc(r.name)}`).join(" · ") + `</div>`;
+  }
+
+  if (s.save?.present) {
+    html += `<div class="card"><details><summary>run save (experimental${s.save.decoded ? "" : ", decode failed"})</summary>
+      <pre>${esc(JSON.stringify(s.save.overview, null, 1))}</pre></details></div>`;
+  }
+
+  if (!html) html = `<div class="card"><p class="small">Start a run and this page fills in live.
+    Tier badges come from the community compendium for your current difficulty and floor.</p></div>`;
+  document.getElementById("app").innerHTML = html;
+}
+
+function connect() {
+  const es = new EventSource("/events");
+  const dot = document.querySelector("#status .dot");
+  const label = document.getElementById("status");
+  es.onopen = () => { dot.classList.add("ok"); label.lastChild.textContent = "live"; };
+  es.onmessage = (e) => render(JSON.parse(e.data));
+  es.onerror = () => {
+    dot.classList.remove("ok");
+    label.lastChild.textContent = "reconnecting";
+    // EventSource retries on its own; nothing else to do
+  };
+}
+connect();
+</script>
+</body>
+</html>

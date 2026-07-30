@@ -35,6 +35,7 @@ python3 tools/collect/collect.py            # autodetects Steam installs (Win/Li
 | `packages/parser` | TypeScript log parser + battle-diff (shop reconstruction) + SteamID scrubber. Pure functions — runs in Workers, Node, and later a companion app tailing live logs. |
 | `packages/schema` | Shared types, D1 migrations. |
 | `apps/worker` | Cloudflare Worker: upload API, parsing, aggregation cron, read API, site hosting. |
+| `apps/companion` | Live companion: tails the game log, localhost UI with context-aware tier badges. See its README for the good-citizen resource contract. |
 | `apps/web` | Stats site (tier lists, entity pages, run replays, drag-and-drop upload). |
 | `tools/collect` | Single-file stdlib-Python uploader for players who prefer a script. |
 | `tools/catalog` | Content-catalog extractor (run by us per game version) + the Python reference parser. |
