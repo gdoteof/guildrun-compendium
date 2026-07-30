@@ -104,11 +104,18 @@ table.stats a { color: var(--ink); }
 .filters .tab.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .small { color: var(--muted); font-size: 0.82rem; }
 
+.cmdwrap { position: relative; margin: 0 0 10px; }
 pre.cmd {
   background: var(--page); border: 1px solid var(--grid); border-radius: 6px;
-  padding: 8px 10px; font-size: 0.78rem; overflow-x: auto; user-select: all;
-  margin: 0 0 10px;
+  padding: 8px 64px 8px 10px; font-size: 0.78rem; overflow-x: auto; margin: 0;
 }
+.cmdwrap .copy {
+  position: absolute; top: 6px; right: 6px;
+  background: var(--surface); color: var(--ink-2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 2px 8px; font: inherit; font-size: 0.75rem; cursor: pointer;
+}
+.cmdwrap .copy:hover { border-color: var(--accent); color: var(--accent); }
+.cmdwrap .copy.ok { border-color: var(--good); color: var(--good); }
 
 .dl {
   display: inline-block; margin: 2px 6px 2px 0; padding: 5px 12px;

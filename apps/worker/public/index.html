@@ -45,11 +45,21 @@
       <a class="dl" href="https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64">🐧 Linux</a>
       <a class="dl" href="https://github.com/gdoteof/guildrun-compendium/releases/latest/download/SHA256SUMS">checksums</a>
     </p>
-    <p class="small" style="margin-bottom:4px">Or paste one line — macOS (either chip; curl skips
+    <p class="small" style="margin-bottom:4px">Or paste — macOS (either chip; curl skips
     Gatekeeper quarantine):</p>
-    <pre class="cmd">curl -fsSL "https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-macos-$(uname -m | sed 's/x86_64/x64/')" -o guildrun-companion &amp;&amp; chmod +x guildrun-companion &amp;&amp; ./guildrun-companion</pre>
+    <div class="cmdwrap">
+      <pre class="cmd">REL=https://github.com/gdoteof/guildrun-compendium/releases/latest/download
+curl -fsSL "$REL/guildrun-companion-macos-$(uname -m | sed 's/x86_64/x64/')" \
+  -o guildrun-companion &amp;&amp; chmod +x guildrun-companion &amp;&amp; ./guildrun-companion</pre>
+      <button class="copy">copy</button>
+    </div>
     <p class="small" style="margin-bottom:4px">Linux:</p>
-    <pre class="cmd">curl -fsSL https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64 -o guildrun-companion &amp;&amp; chmod +x guildrun-companion &amp;&amp; ./guildrun-companion</pre>
+    <div class="cmdwrap">
+      <pre class="cmd">REL=https://github.com/gdoteof/guildrun-compendium/releases/latest/download
+curl -fsSL $REL/guildrun-companion-linux-x64 -o guildrun-companion \
+  &amp;&amp; chmod +x guildrun-companion &amp;&amp; ./guildrun-companion</pre>
+      <button class="copy">copy</button>
+    </div>
     <p class="small">Then play Guildrun and open <code>http://127.0.0.1:4646/</code>.
     Windows: download above and run (SmartScreen: “More info → Run anyway”, or verify checksums).</p>
   </div>
@@ -111,6 +121,20 @@ async function upload(files) {
     out.innerHTML = `<p style="color:var(--bad)">${esc(e.message)}</p>`;
   }
 }
+// copy buttons on the install commands
+for (const btn of document.querySelectorAll(".cmdwrap .copy")) {
+  btn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(btn.parentElement.querySelector("pre").textContent);
+      btn.textContent = "copied!";
+      btn.classList.add("ok");
+    } catch {
+      btn.textContent = "select & copy";
+    }
+    setTimeout(() => { btn.textContent = "copy"; btn.classList.remove("ok"); }, 1600);
+  });
+}
+
 picker.addEventListener("change", () => upload(picker.files));
 drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("hover"); });
 drop.addEventListener("dragleave", () => drop.classList.remove("hover"));
