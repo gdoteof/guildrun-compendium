@@ -21,6 +21,28 @@ export class CaptureUploader {
     private serverUrl: string,
   ) {}
 
+  /** Ship the active log (+ boot.config) so runs appear on the site without a
+   * manual collect step. Server-side dedupe makes repeats cheap: identical
+   * uploads short-circuit on content hash, and re-sent runs are "already
+   * known" unless the new copy has more battles. */
+  async uploadLog(logPath: string, bootConfigPath: string | null): Promise<boolean> {
+    try {
+      const form = new FormData();
+      form.append("files", new File([readFileSync(logPath)], basename(logPath)));
+      if (bootConfigPath && existsSync(bootConfigPath)) {
+        form.append("files", new File([readFileSync(bootConfigPath)], "boot.config"));
+      }
+      const res = await fetch(`${this.serverUrl}/api/upload`, {
+        method: "POST",
+        body: form,
+        headers: { "X-Upload-Source": "companion" },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   /** Best-effort; failures leave files in place for the next attempt. */
   async uploadPending(): Promise<{ sent: number; skipped: boolean }> {
     if (this.uploading) return { sent: 0, skipped: true };

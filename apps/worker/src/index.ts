@@ -47,7 +47,7 @@ app.post("/api/upload", async (c) => {
   // Turnstile secret is configured.
   if (c.env.TURNSTILE_SECRET) {
     const token = form.get("cf-turnstile-response");
-    const isScript = c.req.header("X-Upload-Source") === "collect-script";
+    const isScript = ["collect-script", "companion"].includes(c.req.header("X-Upload-Source") ?? "");
     if (!isScript) {
       if (typeof token !== "string" || !(await verifyTurnstile(c.env.TURNSTILE_SECRET, token, ip))) {
         return c.json({ error: "turnstile verification failed" }, 403);

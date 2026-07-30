@@ -94,10 +94,18 @@ async function main(): Promise<void> {
       () => {
         const present = save!.current().present;
         // run over: the game just deleted the Run file — ship the archive
+        // and the log itself, so the run appears on the site with no manual step
         if (runFileWasPresent && !present && uploader) {
           void uploader.uploadPending().then((r) => {
             if (r.sent) console.log(`[captures] uploaded ${r.sent} run-save capture(s)`);
           });
+          const active = tailer.status().activeFile;
+          if (active && !has("no-log-upload")) {
+            const logPath = `${paths.logsDir}/${active}`;
+            void uploader.uploadLog(logPath, paths.bootConfig).then((ok) => {
+              if (ok) console.log(`[logs] uploaded ${active} (run over)`);
+            });
+          }
         }
         runFileWasPresent = present;
         notify();

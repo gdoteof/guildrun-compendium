@@ -113,6 +113,7 @@ export async function handleUpload(env: Env, store: RawStore, form: FormData): P
     const runs = parseFiles(withHashes);
     const names = await heroNameMap(env.DB);
     const summary = await insertFacts(env.DB, uploadId, playerId, gameVersionId, runs, names);
+    await backfillFromCaptures(env.DB);
     await env.DB
       .prepare("UPDATE upload SET status = 'parsed', runs_found = ?, runs_inserted = ? WHERE id = ?")
       .bind(summary.runsFound, summary.runsInserted + summary.runsReplaced, uploadId)
@@ -135,6 +136,27 @@ export async function handleUpload(env: Env, store: RawStore, form: FormData): P
       .run();
     return { status: 500, body: { error: "parse failed", upload_id: uploadId, detail: String(err) } };
   }
+}
+
+/** Runs can arrive AFTER their captures (logs are uploaded later than the
+ * run-end capture push) — pull true difficulty onto any run that matches an
+ * already-ingested capture by (player, seed). */
+export async function backfillFromCaptures(db: D1Database): Promise<void> {
+  await db.prepare(
+    `UPDATE run SET
+       difficulty_index = COALESCE(difficulty_index,
+         (SELECT c.difficulty_index FROM capture c
+          WHERE c.player_id IS run.player_id AND c.run_seed IS run.seed
+            AND c.difficulty_index IS NOT NULL LIMIT 1)),
+       is_challenge = COALESCE(is_challenge,
+         (SELECT c.is_challenge FROM capture c
+          WHERE c.player_id IS run.player_id AND c.run_seed IS run.seed LIMIT 1)),
+       run_guid = COALESCE(run_guid,
+         (SELECT c.run_guid FROM capture c
+          WHERE c.player_id IS run.player_id AND c.run_seed IS run.seed
+            AND c.run_guid IS NOT NULL LIMIT 1))
+     WHERE seed IS NOT NULL AND (difficulty_index IS NULL OR run_guid IS NULL)`,
+  ).run();
 }
 
 /** Re-parse every stored raw file grouped by upload — run after parser upgrades. */
