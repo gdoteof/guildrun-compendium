@@ -1,1 +1,107 @@
-<!doctype html><title>Guildrun Compendium</title><p>placeholder — Phase 4 builds the real site
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main>
+  <p>Community statistics for <strong>Guildrun</strong>, reconstructed from the game's own log
+  files. Drop your log folder below to add your runs — SteamIDs are scrubbed at ingest and
+  never stored.</p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <label class="drop" id="drop">
+      <input type="file" id="picker" multiple webkitdirectory>
+      <strong>Drop your <code>Guildrun_Data</code> folder here</strong> (or click to pick)<br>
+      <span class="small">Only <code>*.log</code> and <code>boot.config</code> are read and uploaded —
+      dragging the whole game folder is fine. Find it via Steam &rarr; right-click Guildrun &rarr;
+      Manage &rarr; Browse local files &rarr; <code>Guildrun_Data/Logs</code>.</span>
+    </label>
+    <div id="upl-result"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:1rem">Recent runs</h2>
+    <table class="stats" id="runs"><thead><tr>
+      <th>started</th><th class="num">difficulty</th><th class="num">floors</th>
+      <th class="num">W</th><th class="num">L</th><th>result</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+</main>
+
+<script type="module">
+import { api, esc, header } from "/app.js";
+document.getElementById("hdr").outerHTML = header("Overview");
+
+const o = await api("/overview");
+document.getElementById("tiles").innerHTML = [
+  [o.runs, "runs recorded"],
+  [o.beaten, "runs beaten"],
+  [o.battles, "battles"],
+  [o.players, "players"],
+].map(([v, k]) => `<div class="tile"><div class="v">${v ?? 0}</div><div class="k">${k}</div></div>`).join("");
+
+const runs = await api("/runs");
+document.querySelector("#runs tbody").innerHTML = runs.runs.map((r) => `
+  <tr>
+    <td><a href="/run.html?id=${r.id}">${esc(r.start_ts.slice(0, 16))}</a></td>
+    <td class="num">${r.difficulty ?? "–"}</td>
+    <td class="num">${r.floors_reached}</td>
+    <td class="num">${r.battles_won}</td>
+    <td class="num">${r.battles_lost}</td>
+    <td>${r.beaten ? `<strong style="color:var(--good)">BEATEN</strong>${r.endless_battles ? ` <span class="small">+${r.endless_battles} endless</span>` : ""}` : `<span class="small">died floor ${r.floors_reached}</span>`}</td>
+  </tr>`).join("");
+
+// ---- upload ----
+const drop = document.getElementById("drop");
+const picker = document.getElementById("picker");
+const out = document.getElementById("upl-result");
+
+async function upload(files) {
+  const keep = [...files].filter((f) => f.name.endsWith(".log") || f.name === "boot.config");
+  if (!keep.length) { out.innerHTML = `<p class="small">No .log files in that selection.</p>`; return; }
+  out.innerHTML = `<p class="small">Uploading ${keep.length} file(s)…</p>`;
+  const form = new FormData();
+  for (const f of keep) form.append("files", f, f.name);
+  try {
+    const res = await fetch("/api/upload", { method: "POST", body: form });
+    const body = await res.json();
+    out.innerHTML = res.ok
+      ? body.duplicate
+        ? `<p>Already have this exact upload — nothing new to add.</p>`
+        : `<p><strong>${body.runs_found}</strong> runs found; <strong>${body.runs_inserted}</strong> new,
+           ${body.runs_replaced} extended, ${body.runs_skipped_duplicate} already known.
+           Stats refresh momentarily — <a href="/tiers.html">see the tier lists</a>.</p>`
+      : `<p style="color:var(--bad)">${esc(body.error ?? res.status)}</p>`;
+  } catch (e) {
+    out.innerHTML = `<p style="color:var(--bad)">${esc(e.message)}</p>`;
+  }
+}
+picker.addEventListener("change", () => upload(picker.files));
+drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("hover"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("hover"));
+drop.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  drop.classList.remove("hover");
+  const files = [];
+  const walk = async (entry) =>
+    new Promise((resolve) => {
+      if (entry.isFile) entry.file((f) => { files.push(f); resolve(); });
+      else entry.createReader().readEntries(async (es) => {
+        for (const e2 of es) await walk(e2);
+        resolve();
+      });
+    });
+  const items = [...e.dataTransfer.items].map((i) => i.webkitGetAsEntry?.()).filter(Boolean);
+  if (items.length) { for (const it of items) await walk(it); await upload(files); }
+  else await upload(e.dataTransfer.files);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tier lists — Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main>
+  <h2 style="font-size:1.15rem">Tier lists</h2>
+  <div class="filters">
+    <span class="tab active" data-type="hero">Heroes</span>
+    <span class="tab" data-type="item">Items</span>
+    <span class="tab" data-type="relic">Relics</span>
+    <select id="difficulty">
+      <option value="0">All difficulties</option>
+      <option value="1">Difficulty 1</option><option value="2">Difficulty 2</option>
+      <option value="3">Difficulty 3</option><option value="4">Difficulty 4</option>
+      <option value="5">Difficulty 5</option><option value="6">Difficulty 6</option>
+      <option value="7">Difficulty 7</option>
+    </select>
+    <select id="band">
+      <option value="all">All floors</option>
+      <option value="1-4">Floors 1–4</option>
+      <option value="6-9">Floors 6–9</option>
+      <option value="10-13">Floors 10–13</option>
+      <option value="endless">Endless</option>
+    </select>
+    <span class="small" id="ctx-note"></span>
+  </div>
+  <div class="card">
+    <table class="stats"><thead><tr>
+      <th>tier</th><th>name</th><th>rarity</th>
+      <th class="num">battles</th><th>battle win rate</th>
+      <th class="num">runs</th><th>run beat rate</th>
+      <th class="num">lift</th><th class="num">deaths</th>
+    </tr></thead><tbody id="rows"></tbody></table>
+    <p class="small">Lift = shrunk success rate vs. the baseline for this exact context; small
+    samples are pulled toward 1.00× by design. Low sample sizes are marked. Details on the
+    <a href="/about.html">methodology page</a>.</p>
+  </div>
+</main>
+
+<script type="module">
+import { api, esc, header, tierBadge, rarityLabel, winBar, fmtLift, entityLink } from "/app.js";
+document.getElementById("hdr").outerHTML = header("Tier lists");
+
+const state = { type: "hero", difficulty: "0", band: "all" };
+
+async function render() {
+  const d = await api(`/stats/${state.type}?difficulty=${state.difficulty}&floor_band=${state.band}`);
+  const rows = d.entities;
+  document.getElementById("ctx-note").textContent = `${rows.length} entries`;
+  document.getElementById("rows").innerHTML = rows.map((e) => `
+    <tr>
+      <td>${tierBadge(e.tier)}</td>
+      <td>${entityLink(state.type, e.ref, e.name ?? e.ref)}${e.n_runs && e.n_runs < 5 ? ' <span class="small" title="fewer than 5 runs">low n</span>' : ""}</td>
+      <td>${rarityLabel(e.rarity)}</td>
+      <td class="num">${e.n_battles}</td>
+      <td>${winBar(e.battle_wins, e.n_battles)}</td>
+      <td class="num">${e.n_runs}</td>
+      <td>${winBar(e.run_beats, e.n_runs)}</td>
+      <td class="num">${fmtLift(e.run_lift ?? e.battle_lift)}</td>
+      <td class="num">${e.deaths || ""}</td>
+    </tr>`).join("");
+}
+
+for (const tab of document.querySelectorAll(".tab")) {
+  tab.addEventListener("click", () => {
+    document.querySelector(".tab.active").classList.remove("active");
+    tab.classList.add("active");
+    state.type = tab.dataset.type;
+    render();
+  });
+}
+document.getElementById("difficulty").addEventListener("change", (e) => { state.difficulty = e.target.value; render(); });
+document.getElementById("band").addEventListener("change", (e) => { state.band = e.target.value; render(); });
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entity — Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main id="main"><p class="small">Loading…</p></main>
+
+<script type="module">
+import { api, esc, header, tierBadge, winBar, fmtLift, rarityLabel } from "/app.js";
+document.getElementById("hdr").outerHTML = header("");
+
+const params = new URLSearchParams(location.search);
+const type = params.get("type"), ref = params.get("ref");
+const main = document.getElementById("main");
+
+try {
+  const e = await api(`/entity/${encodeURIComponent(type)}/${encodeURIComponent(ref)}`);
+  document.title = `${e.name} — Guildrun Compendium`;
+  const all = e.contexts.find((c) => c.ctx_version === "all" && c.ctx_difficulty === 0 && c.ctx_floor_band === "all");
+  const meta = e.meta ?? {};
+  main.innerHTML = `
+    <h2 style="font-size:1.3rem;margin-bottom:2px">${esc(e.name)}
+      ${all ? tierBadge(all.tier) : ""} ${rarityLabel(e.rarity)}</h2>
+    <p class="small">${esc(ref)}${meta.Description ? " — " + esc(String(meta.Description)) : ""}</p>
+    ${all ? `<div class="tiles">
+      <div class="tile"><div class="v">${all.n_battles}</div><div class="k">battles fielded</div></div>
+      <div class="tile"><div class="v">${all.n_battles ? Math.round((all.battle_wins / all.n_battles) * 100) + "%" : "–"}</div><div class="k">battle win rate</div></div>
+      <div class="tile"><div class="v">${all.n_runs}</div><div class="k">runs</div></div>
+      <div class="tile"><div class="v">${all.n_runs ? Math.round((all.run_beats / all.n_runs) * 100) + "%" : "–"}</div><div class="k">run beat rate</div></div>
+      ${all.deaths ? `<div class="tile"><div class="v">${all.deaths}</div><div class="k">deaths</div></div>` : ""}
+    </div>` : ""}
+    <div class="card">
+      <h3 style="margin-top:0;font-size:0.95rem">By context</h3>
+      <table class="stats"><thead><tr>
+        <th>version</th><th class="num">difficulty</th><th>floors</th>
+        <th class="num">battles</th><th>battle win rate</th>
+        <th class="num">runs</th><th>run beat rate</th><th class="num">lift</th><th>tier</th>
+      </tr></thead><tbody>
+      ${e.contexts.map((c) => `
+        <tr>
+          <td>${esc(c.ctx_version)}</td>
+          <td class="num">${c.ctx_difficulty === 0 ? "all" : c.ctx_difficulty}</td>
+          <td>${esc(c.ctx_floor_band)}</td>
+          <td class="num">${c.n_battles}</td>
+          <td>${winBar(c.battle_wins, c.n_battles)}</td>
+          <td class="num">${c.n_runs || ""}</td>
+          <td>${c.n_runs ? winBar(c.run_beats, c.n_runs) : ""}</td>
+          <td class="num">${fmtLift(c.run_lift ?? c.battle_lift)}</td>
+          <td>${tierBadge(c.tier)}</td>
+        </tr>`).join("")}
+      </tbody></table>
+    </div>`;
+} catch {
+  main.innerHTML = `<p>Not found.</p>`;
+}
+</script>
+</body>
+</html>

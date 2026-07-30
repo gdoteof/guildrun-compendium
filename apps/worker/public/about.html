@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology — Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main>
+  <h2 style="font-size:1.15rem">How this works</h2>
+  <div class="card">
+    <h3 style="margin-top:0">Where the data comes from</h3>
+    <p>Guildrun writes structured logs next to the game
+    (<code>Guildrun_Data/Logs</code>), and every battle logs its <em>complete</em> starting
+    state — party, ranks, items, relics, shard balance, RNG seed. Diffing consecutive
+    battles reconstructs what happened in each shop phase, even though purchases are never
+    logged directly. Players contribute by dropping their log folder on the
+    <a href="/">home page</a>; nothing is installed and the game is never touched.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Rankings</h3>
+    <p>Guildrun is PvE, so there is no head-to-head Elo. Instead, per context
+    (game version × difficulty × floor band), each entity gets an
+    <strong>empirical-Bayes shrunk success rate</strong>:</p>
+    <p style="text-align:center"><code>score = (wins + k·p0) / (n + k)</code></p>
+    <p>where <code>p0</code> is the baseline success rate in that exact context and
+    <code>k</code> a shrinkage weight (20 for battles, 8 for runs). <strong>Lift</strong> is
+    score ÷ baseline; tiers are fixed lift bands (S ≥ 1.10, A ≥ 1.03, B ≥ 0.97, C ≥ 0.90,
+    else D). Small samples are pulled toward 1.00× — an entity seen twice cannot rocket
+    to S tier off a lucky pair of wins. Entries with fewer than 5 runs are flagged.</p>
+    <p class="small">Two outcome families are tracked: battle-level (did this battle end in
+    victory with the entity fielded?) and run-level (was a run that ever used the entity
+    beaten?). Tier assignment prefers run-level lift when the sample allows.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Honest limits</h3>
+    <ul>
+      <li><strong>Skill confounding:</strong> pick rate correlates with player skill; a
+      popular pick among strong players inflates. Per-player segmentation (anonymous) exists
+      in the data model to correct for this as the sample grows.</li>
+      <li><strong>Shop offers are counted, not named:</strong> the game logs how many things
+      were offered vs. bought, but names only items on sale — so "win rate when offered but
+      skipped" is only computable for sale offers.</li>
+      <li><strong>Prices aren't recoverable:</strong> shard movement is only known as a net
+      figure per shop phase.</li>
+      <li><strong>Unequipped items are invisible:</strong> an item bought but never equipped
+      for a battle never appears in any log line.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">Privacy</h3>
+    <p>Log files contain your SteamID in a few file-path lines. At ingest the ID is used
+    once to derive an anonymous identity (HMAC with a server-side secret), then scrubbed
+    from the raw text before anything is stored. No raw SteamID is stored or served, and
+    nothing else in the logs is personal. Source:
+    <a href="https://github.com/gdoteof/guildrun-compendium">github.com/gdoteof/guildrun-compendium</a>.</p>
+  </div>
+</main>
+<script type="module">
+import { header } from "/app.js";
+document.getElementById("hdr").outerHTML = header("Methodology");
+</script>
+</body>
+</html>

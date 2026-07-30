@@ -1,0 +1,121 @@
+/* Guildrun Compendium — tokens follow the validated reference dataviz palette.
+   Tier badges use the blue ordinal ramp, rarity the orange ordinal ramp — both
+   validated light+dark with the skill's palette validator. Identity is never
+   color-alone: badges always carry their letter/label. */
+
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --border: rgba(11, 11, 11, 0.10);
+  --accent: #2a78d6;
+  --good: #006300;
+  --bad: #d03b3b;
+  --bar: #2a78d6;
+  --bar-track: #e1e0d9;
+  --tier-S: #104281; --tier-A: #1c5cab; --tier-B: #2a78d6; --tier-C: #5598e7; --tier-D: #86b6ef;
+  --tier-ink-S: #fff; --tier-ink-A: #fff; --tier-ink-B: #fff; --tier-ink-C: #fff; --tier-ink-D: #0b0b0b;
+  --rar-Epic: #8a3612; --rar-Rare: #d95926; --rar-Common: #f0916b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --good: #0ca30c;
+    --bad: #e66767;
+    --bar: #3987e5;
+    --bar-track: #2c2c2a;
+    --tier-S: #b7d3f6; --tier-A: #86b6ef; --tier-B: #5598e7; --tier-C: #256abf; --tier-D: #184f95;
+    --tier-ink-S: #0b0b0b; --tier-ink-A: #0b0b0b; --tier-ink-B: #0b0b0b; --tier-ink-C: #fff; --tier-ink-D: #fff;
+    --rar-Epic: #f7b697; --rar-Rare: #eb6834; --rar-Common: #a8431a;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+header.site {
+  display: flex; align-items: baseline; gap: 1.2rem; flex-wrap: wrap;
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--grid);
+}
+header.site h1 { font-size: 1.1rem; margin: 0; }
+header.site h1 a { color: var(--ink); }
+header.site nav { display: flex; gap: 1rem; font-size: 0.92rem; }
+main { max-width: 1080px; margin: 0 auto; padding: 1.2rem 1.5rem 4rem; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 1rem 0; }
+.tile {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px;
+}
+.tile .v { font-size: 1.7rem; font-weight: 650; }
+.tile .k { color: var(--muted); font-size: 0.82rem; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; margin: 1rem 0;
+}
+
+table.stats { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+table.stats th {
+  text-align: left; color: var(--muted); font-weight: 500; font-size: 0.8rem;
+  padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap;
+}
+table.stats td { padding: 7px 10px; border-bottom: 1px solid var(--grid); }
+table.stats td.num, table.stats th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.stats tbody tr:hover { background: color-mix(in oklab, var(--accent) 6%, transparent); }
+table.stats a { color: var(--ink); }
+
+.badge {
+  display: inline-block; min-width: 1.6em; text-align: center;
+  border-radius: 5px; padding: 1px 6px; font-weight: 650; font-size: 0.85rem;
+}
+.rarity { font-size: 0.8rem; font-weight: 600; }
+
+.winbar { display: inline-flex; align-items: center; gap: 8px; min-width: 130px; }
+/* spans need explicit display for width/height to apply */
+.winbar .track { display: block; flex: 1; height: 4px; border-radius: 2px; background: var(--bar-track); overflow: hidden; }
+.winbar .fill { display: block; height: 100%; border-radius: 2px; background: var(--bar); }
+.winbar .lbl { font-variant-numeric: tabular-nums; font-size: 0.85rem; width: 3.2em; text-align: right; }
+
+.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 0.8rem 0 1.2rem; }
+.filters select, .filters button, .filters .tab {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 0.9rem; cursor: pointer;
+}
+.filters .tab.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.small { color: var(--muted); font-size: 0.82rem; }
+
+.drop {
+  display: block;
+  border: 2px dashed var(--grid); border-radius: 10px; padding: 2rem; text-align: center;
+  color: var(--ink-2); transition: border-color 0.15s; cursor: pointer;
+}
+.drop.hover { border-color: var(--accent); }
+.drop input { display: none; }
+pre.result { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; }
+
+.timeline .b { border-left: 3px solid var(--grid); margin: 0 0 0 8px; padding: 4px 0 4px 14px; }
+.timeline .b.victory { border-left-color: var(--good); }
+.timeline .b.defeat { border-left-color: var(--bad); }
+.timeline .phase { color: var(--ink-2); font-size: 0.88rem; margin: 2px 0 2px 22px; }
+.timeline .hdr { font-weight: 600; }
+.timeline .meta { color: var(--muted); font-size: 0.82rem; }

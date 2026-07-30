@@ -67,7 +67,8 @@ api.get("/stats/:type", async (c) => {
        FROM stat s
        LEFT JOIN catalog cat ON cat.entity_type = s.entity_type AND cat.ref = s.ref
        WHERE s.entity_type = ? AND s.ctx_version = ? AND s.ctx_difficulty = ? AND s.ctx_floor_band = ?
-       ORDER BY COALESCE(s.run_lift, s.battle_lift) DESC`,
+       ORDER BY CASE s.tier WHEN 'S' THEN 0 WHEN 'A' THEN 1 WHEN 'B' THEN 2 WHEN 'C' THEN 3 WHEN 'D' THEN 4 ELSE 5 END,
+                COALESCE(s.run_lift, s.battle_lift) DESC`,
     )
     .bind(type, version, difficulty, band)
     .all();

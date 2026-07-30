@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run replay — Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main id="main"><p class="small">Loading…</p></main>
+
+<script type="module">
+import { api, esc, header } from "/app.js";
+document.getElementById("hdr").outerHTML = header("");
+
+const id = new URLSearchParams(location.search).get("id");
+const main = document.getElementById("main");
+const RANKS = { 1: "C", 2: "B", 3: "A", 4: "S" };
+
+const stageLabel = (b) => {
+  if (b.stage_kind === "campaign") return `floor ${b.floor}`;
+  if (b.stage_kind === "endless") return "endless";
+  if (b.stage_kind === "event_fight") return "event fight";
+  if (b.stage_kind === "opening") return "opening";
+  return b.stage_raw ?? "?";
+};
+
+try {
+  const d = await api(`/runs/${encodeURIComponent(id)}`);
+  const r = d.run;
+  document.title = `Run ${r.seed} — Guildrun Compendium`;
+
+  const acqByPhase = new Map();
+  for (const a of d.acquisitions) {
+    const arr = acqByPhase.get(a.after_ordinal) ?? [];
+    arr.push(a);
+    acqByPhase.set(a.after_ordinal, arr);
+  }
+  const shopByPhase = new Map();
+  for (const s of d.shop_phases) {
+    const arr = shopByPhase.get(s.after_ordinal) ?? [];
+    arr.push(s);
+    shopByPhase.set(s.after_ordinal, arr);
+  }
+
+  const ACQ_LABEL = {
+    hero_join: "hero joined", hero_leave: "hero left", rank_up: "rank up",
+    spec_gain: "specialised", item_equip: "equipped", item_unequip: "unequipped",
+    relic_gain: "relic", relic_lost: "relic expired",
+  };
+
+  const phaseHtml = (ordinal) => {
+    const acqs = acqByPhase.get(ordinal) ?? [];
+    const shops = shopByPhase.get(ordinal) ?? [];
+    if (!acqs.length && !shops.length) return "";
+    const parts = [];
+    for (const s of shops) {
+      if (s.heroes_offered != null) {
+        parts.push(`shop: heroes ${s.heroes_bought}/${s.heroes_offered}, items ${s.items_bought}/${s.items_offered}, relics ${s.relics_bought}/${s.relics_offered} (bought/offered)` +
+          (s.rerolls ? `, ${s.rerolls} reroll(s)` : "") +
+          (s.net_shards != null ? `, net ${s.net_shards > 0 ? "-" : "+"}${Math.abs(s.net_shards)} shards` : ""));
+      }
+      const sales = JSON.parse(s.sales_json ?? "[]");
+      if (sales.length) parts.push(`on sale: ${sales.map((x) => esc(x.name)).join(", ")}`);
+    }
+    for (const a of acqs) {
+      const label = ACQ_LABEL[a.kind] ?? a.kind;
+      let txt = `${label}: ${esc(a.resolved.name)}`;
+      if (a.kind === "rank_up") {
+        const det = JSON.parse(a.detail ?? "{}");
+        txt += ` ${RANKS[det.from] ?? det.from} → ${RANKS[det.to] ?? det.to}`;
+      }
+      if (a.hero) txt += ` → ${esc(a.hero.name)}`;
+      parts.push(txt);
+    }
+    return `<div class="phase">${parts.map((p) => `· ${p}`).join("<br>")}</div>`;
+  };
+
+  main.innerHTML = `
+    <h2 style="font-size:1.2rem;margin-bottom:2px">Run <code>${esc(String(r.seed))}</code></h2>
+    <p class="small">${esc(r.start_ts.slice(0, 16))} · difficulty ${r.difficulty ?? "?"} ·
+      ${r.beaten ? `<strong style="color:var(--good)">BEATEN</strong>` : `died on floor ${r.floors_reached}`} ·
+      ${r.battles_won}W/${r.battles_lost}L · ${r.lives_lost} lives lost</p>
+    <div class="timeline">
+      ${d.battles.map((b) => `
+        ${phaseHtml(b.ordinal - 1)}
+        <div class="b ${esc(b.outcome ?? "")}">
+          <div class="hdr">${stageLabel(b)}
+            <span style="color:${b.outcome === "victory" ? "var(--good)" : b.outcome === "defeat" ? "var(--bad)" : "var(--muted)"}">
+              ${esc((b.outcome ?? "abandoned").toUpperCase())}</span>
+            ${b.is_boss ? "· BOSS" : ""}
+            <span class="meta">· ${b.enemy_count} enemies · seed ${b.sim_seed ?? "?"}${b.combat_s ? ` · ${b.combat_s}s combat` : ""}</span>
+          </div>
+          <div class="meta">
+            ${b.party.filter((p) => !p.reserve).map((p) =>
+              `${esc(p.name)} <strong>${RANKS[p.rank] ?? "?"}</strong>${p.items.length ? ` (${p.items.map((i) => esc(i.name)).join(", ")})` : ""}`).join(" · ")}
+          </div>
+          ${b.relics.length ? `<div class="meta">relics (${b.relics.length}): ${b.relics.map((x) => esc(x.name)).join(", ")}</div>` : ""}
+          ${b.deaths.filter((x) => x.is_hero).length ? `<div class="meta" style="color:var(--bad)">lost: ${b.deaths.filter((x) => x.is_hero).map((x) => esc(x.name)).join(", ")}</div>` : ""}
+        </div>`).join("")}
+    </div>`;
+} catch {
+  main.innerHTML = "<p>Run not found.</p>";
+}
+</script>
+</body>
+</html>
