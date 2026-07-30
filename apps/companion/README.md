@@ -69,3 +69,22 @@ announced on stderr.
   CrossOver/Whisky, pass `--game-dir` at the bottle's game folder. If you downloaded the
   binary through a browser, macOS quarantines it — `xattr -d com.apple.quarantine <file>`
   or fetch it with `curl` instead.
+
+## Run as a service (Linux, systemd user unit)
+
+The companion is service-shaped by design: clean SIGTERM shutdown, stdout logging
+(journald), no interactivity, memory bounded (state resets on daily log rotation), and
+0 idle CPU — running it permanently costs nothing while the game is closed.
+
+```bash
+install -m 755 dist/guildrun-companion-linux-x64 ~/.local/bin/guildrun-companion
+cp contrib/guildrun-companion.service ~/.config/systemd/user/   # edit --game-dir
+systemctl --user daemon-reload
+systemctl --user enable --now guildrun-companion
+```
+
+The shipped unit includes hard resource ceilings (MemoryMax=300M, CPUQuota=50%) and a
+read-only filesystem sandbox (`ProtectHome=read-only` + write access only to its own
+config dir) — belt and braces on top of the app's own budget. Starts at login; the
+game needs a login session anyway. macOS equivalent would be a LaunchAgent plist;
+Windows a Scheduled Task at logon — same binary, no code changes.

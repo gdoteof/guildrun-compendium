@@ -1,0 +1,25 @@
+[Unit]
+Description=Guildrun Companion (live run overlay at http://127.0.0.1:4646)
+Documentation=https://github.com/gdoteof/guildrun-compendium
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/guildrun-companion --game-dir "<path to .../Guildrun_Data, or omit --game-dir to autodetect>"
+Restart=on-failure
+RestartSec=10
+
+# Good-citizen ceilings — the app measures 0 idle CPU and ~60MB RSS; these
+# are hard caps so even a pathological bug can't hurt the machine.
+MemoryMax=300M
+CPUQuota=50%
+Nice=10
+
+# Hardening: it only ever reads game files and writes its own config dir.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=%h/.config/guildrun-companion
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
