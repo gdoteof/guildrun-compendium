@@ -79,9 +79,19 @@ try {
 
   main.innerHTML = `
     <h2 style="font-size:1.2rem;margin-bottom:2px">Run <code>${esc(String(r.seed))}</code></h2>
-    <p class="small">${esc(r.start_ts.slice(0, 16))} · difficulty ${r.difficulty ?? "?"} ·
+    <p class="small">${esc(r.start_ts.slice(0, 16))} ·
+      ${r.difficulty_label ? `difficulty <strong>${esc(r.difficulty_label)}</strong> · ` : ""}stage pool ${r.difficulty ?? "?"} ·
       ${r.beaten ? `<strong style="color:var(--good)">BEATEN</strong>` : `died on floor ${r.floors_reached}`} ·
       ${r.battles_won}W/${r.battles_lost}L · ${r.lives_lost} lives lost</p>
+    ${d.shop_offers_seen?.length ? `<div class="card">
+      <h3 style="margin-top:0;font-size:0.95rem">Shop offers seen
+        <span class="small">(from run-save captures — includes rerolled-past offers)</span></h3>
+      ${d.shop_offers_seen.map((s) => `<div class="meta" style="margin:4px 0">
+        <strong>floor ${s.floor ?? "?"}</strong> ·
+        ${s.offers.map((o) => `${esc(o.name)}${o.rank ? ` [${RANKS[o.rank] ?? o.rank}]` : ""}
+          <span class="small">${o.on_sale ? `<s>${o.base_cost}</s> ${o.price}` : o.price}s</span>`).join(" · ")}
+      </div>`).join("")}
+    </div>` : ""}
     <div class="timeline">
       ${d.battles.map((b) => `
         ${phaseHtml(b.ordinal - 1)}

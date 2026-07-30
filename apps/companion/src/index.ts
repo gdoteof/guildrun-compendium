@@ -21,6 +21,7 @@ import { LogTailer } from "./tailer.js";
 import { LiveGame } from "./live.js";
 import { CompendiumClient } from "./compendium.js";
 import { RunSaveWatcher } from "./runsave.js";
+import { CaptureUploader } from "./uploader.js";
 import { CompanionServer } from "./server.js";
 
 const DEFAULT_SERVER = "https://guildrun-compendium.laxity-03-hunger3397.workers.dev";
@@ -78,14 +79,30 @@ async function main(): Promise<void> {
   });
 
   let save: RunSaveWatcher | null = null;
+  let uploader: CaptureUploader | null = null;
   const saveDir = arg("save-dir") ?? paths.saveDir;
   if (saveDir && !has("no-save-watch")) {
     const { configDir } = await import("./paths.js");
     const { join } = await import("node:path");
+    const archiveDir = has("save-archive") ? join(configDir(), "save-captures") : null;
+    if (archiveDir && !has("no-capture-upload")) {
+      uploader = new CaptureUploader(archiveDir, saveDir, arg("server") ?? DEFAULT_SERVER);
+    }
+    let runFileWasPresent = false;
     save = new RunSaveWatcher(
       saveDir,
-      notify,
-      has("save-archive") ? join(configDir(), "save-captures") : null,
+      () => {
+        const present = save!.current().present;
+        // run over: the game just deleted the Run file — ship the archive
+        if (runFileWasPresent && !present && uploader) {
+          void uploader.uploadPending().then((r) => {
+            if (r.sent) console.log(`[captures] uploaded ${r.sent} run-save capture(s)`);
+          });
+        }
+        runFileWasPresent = present;
+        notify();
+      },
+      archiveDir,
     );
   }
 
@@ -98,6 +115,12 @@ async function main(): Promise<void> {
 
   const { activeFile } = tailer.start();
   save?.start();
+  // startup sweep: captures left over from runs that ended while we were down
+  if (uploader) {
+    void uploader.uploadPending().then((r) => {
+      if (r.sent) console.log(`[captures] uploaded ${r.sent} pending capture(s) from previous runs`);
+    });
+  }
   const host = arg("host") ?? "127.0.0.1";
   const port = await server.listen(parseInt(arg("port") ?? "4646", 10), host);
 

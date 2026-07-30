@@ -6,6 +6,7 @@
 
 import { Hono } from "hono";
 import type { Env } from "./env.js";
+import { difficultyLabel } from "./captures.js";
 
 type App = { Bindings: Env };
 
@@ -228,7 +229,9 @@ api.get("/runs/:id", async (c) => {
   const run = await db.prepare("SELECT * FROM run WHERE id = ?").bind(id).first();
   if (!run) return c.json({ error: "not found" }, 404);
 
-  const [battles, units, items, relics, deaths, acqs, shops, catalog] = await Promise.all([
+  const runRow = run as { player_id: string | null; seed: number | null;
+    difficulty_index: number | null; is_challenge: number | null };
+  const [battles, units, items, relics, deaths, acqs, shops, catalog, offers, events] = await Promise.all([
     db.prepare("SELECT * FROM battle WHERE run_id = ? ORDER BY ordinal").bind(id).all(),
     db.prepare(
       "SELECT bu.* FROM battle_unit bu JOIN battle b ON b.id = bu.battle_id WHERE b.run_id = ?",
@@ -247,6 +250,21 @@ api.get("/runs/:id", async (c) => {
     db.prepare("SELECT entity_type, ref, name, rarity FROM catalog").all<{
       entity_type: string; ref: string; name: string; rarity: string | null;
     }>(),
+    // capture-derived shop offers for this run (deduped offer sets by floor)
+    db.prepare(
+      `SELECT c.total_floor, c.captured_at, o.kind, o.ref, o.rank, o.base_cost, o.discount_raw, o.frozen
+       FROM capture c JOIN capture_shop_offer o ON o.capture_hash = c.hash
+       WHERE c.player_id IS ? AND c.run_seed IS ?
+       ORDER BY c.captured_at, o.kind, o.slot`,
+    ).bind(runRow.player_id, runRow.seed).all<{
+      total_floor: number | null; captured_at: string | null; kind: string; ref: string;
+      rank: number | null; base_cost: number | null; discount_raw: number | null; frozen: number;
+    }>(),
+    db.prepare(
+      `SELECT DISTINCT e.event_seq, e.resolved, e.outcome_text, e.summaries
+       FROM capture c JOIN capture_event e ON e.capture_hash = c.hash
+       WHERE c.player_id IS ? AND c.run_seed IS ? AND e.resolved = 1`,
+    ).bind(runRow.player_id, runRow.seed).all(),
   ]);
 
   const names = new Map(catalog.results.map((r) => [`${r.entity_type}:${r.ref}`, r.name]));
@@ -306,8 +324,52 @@ api.get("/runs/:id", async (c) => {
     hero: a.hero_ref ? resolve("hero", a.hero_ref) : null,
   }));
 
+  // group capture offers into distinct offer-sets (per capture timestamp)
+  const offerSets = new Map<string, typeof offers.results>();
+  for (const o of offers.results) {
+    const key = `${o.total_floor}|${o.captured_at}`;
+    const arr = offerSets.get(key) ?? [];
+    arr.push(o);
+    offerSets.set(key, arr);
+  }
+  const seenSet = new Set<string>();
+  const shopOffers = [...offerSets.entries()]
+    .map(([key, list]) => ({
+      floor: list[0]!.total_floor,
+      captured_at: list[0]!.captured_at,
+      offers: list.map((o) => ({
+        ...resolve(o.kind, o.ref),
+        kind: o.kind,
+        rank: o.rank,
+        base_cost: o.base_cost,
+        // DiscountRaw is Q16: 16384 = 25% off
+        price: o.base_cost !== null && o.discount_raw
+          ? Math.floor(o.base_cost * (1 - o.discount_raw / 65536))
+          : o.base_cost,
+        on_sale: !!o.discount_raw,
+        frozen: !!o.frozen,
+      })),
+      _sig: key && JSON.stringify(list.map((o) => `${o.kind}:${o.ref}:${o.discount_raw}`)),
+    }))
+    .filter((s) => {
+      if (seenSet.has(s._sig)) return false;   // identical set captured twice
+      seenSet.add(s._sig);
+      return true;
+    })
+    .map(({ _sig, ...rest }) => rest);
+
   return c.json(
-    { run, battles: battlesOut, acquisitions: acqsOut, shop_phases: shops.results },
+    {
+      run: {
+        ...run,
+        difficulty_label: difficultyLabel(runRow.difficulty_index, runRow.is_challenge),
+      },
+      battles: battlesOut,
+      acquisitions: acqsOut,
+      shop_phases: shops.results,
+      shop_offers_seen: shopOffers,
+      event_outcomes: events.results,
+    },
     200, { "Cache-Control": CACHE },
   );
 });

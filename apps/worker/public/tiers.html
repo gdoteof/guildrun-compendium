@@ -14,12 +14,14 @@
     <span class="tab active" data-type="hero">Heroes</span>
     <span class="tab" data-type="item">Items</span>
     <span class="tab" data-type="relic">Relics</span>
+    <!-- The stage-pool axis (1-3, from stage ids). The true selected
+         difficulty (C..SSS, <*>) comes from companion save captures and
+         becomes a stats dimension as that data accumulates. -->
     <select id="difficulty">
-      <option value="0">All difficulties</option>
-      <option value="1">Difficulty 1</option><option value="2">Difficulty 2</option>
-      <option value="3">Difficulty 3</option><option value="4">Difficulty 4</option>
-      <option value="5">Difficulty 5</option><option value="6">Difficulty 6</option>
-      <option value="7">Difficulty 7</option>
+      <option value="0">All stage pools</option>
+      <option value="1">Stage pool 1</option>
+      <option value="2">Stage pool 2</option>
+      <option value="3">Stage pool 3</option>
     </select>
     <select id="band">
       <option value="all">All floors</option>

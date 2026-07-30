@@ -10,6 +10,8 @@ import { handleUpload, reparseAll } from "./ingest.js";
 import { materializeStats } from "./aggregate.js";
 import { api } from "./api.js";
 import { auth, handleMe } from "./auth.js";
+import { ingestCaptures } from "./captures.js";
+import { playerHash } from "./env.js";
 
 type App = { Bindings: Env };
 
@@ -126,6 +128,35 @@ app.post("/api/admin/catalog", async (c) => {
   }
   for (let i = 0; i < stmts.length; i += 40) await c.env.DB.batch(stmts.slice(i, i + 40));
   return c.json({ seeded: n });
+});
+
+/** Run-save captures from the companion. Identity comes as a steam_id field
+ * (from the save-dir path), hashed server-side exactly like log ingestion. */
+app.post("/api/captures", async (c) => {
+  const ip = c.req.header("CF-Connecting-IP") ?? "local";
+  if (await rateLimited(c.env, ip)) return c.json({ error: "rate limited" }, 429);
+  const form = await c.req.raw.formData();
+  const steamId = form.get("steam_id");
+  const playerId = typeof steamId === "string" && /^\d{17}$/.test(steamId)
+    ? await playerHash(c.env.HMAC_SALT ?? "dev-salt-not-for-production", steamId)
+    : null;
+  if (playerId) {
+    await c.env.DB
+      .prepare("INSERT OR IGNORE INTO player (id, first_seen) VALUES (?,?)")
+      .bind(playerId, new Date().toISOString())
+      .run();
+  }
+  const isFilePart = (f: unknown): f is { name: string; text(): Promise<string> } =>
+    typeof f === "object" && f !== null && "name" in f &&
+    typeof (f as { text?: unknown }).text === "function";
+  const files: { name: string; text: string }[] = [];
+  for (const f of (form.getAll("files") as unknown[]).filter(isFilePart)) {
+    files.push({ name: f.name, text: await f.text() });
+  }
+  if (!files.length) return c.json({ error: "no files" }, 400);
+  if (files.length > 400) return c.json({ error: "too many files" }, 400);
+  const result = await ingestCaptures(c.env, playerId, files);
+  return c.json(result);
 });
 
 app.route("/auth/steam", auth);
