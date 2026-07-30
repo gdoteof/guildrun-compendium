@@ -35,7 +35,8 @@ async function main(): Promise<void> {
   if (has("help")) {
     console.log(
       "guildrun-companion [--game-dir <path>] [--port <n>] [--host <addr>]\n" +
-      "                   [--server <url>] [--no-save-watch]",
+      "                   [--server <url>] [--no-save-watch] [--save-dir <path>]\n" +
+      "                   [--save-archive]   archive distinct Run-save states for research",
     );
     return;
   }
@@ -77,8 +78,15 @@ async function main(): Promise<void> {
   });
 
   let save: RunSaveWatcher | null = null;
-  if (paths.saveDir && !has("no-save-watch")) {
-    save = new RunSaveWatcher(paths.saveDir, notify);
+  const saveDir = arg("save-dir") ?? paths.saveDir;
+  if (saveDir && !has("no-save-watch")) {
+    const { configDir } = await import("./paths.js");
+    const { join } = await import("node:path");
+    save = new RunSaveWatcher(
+      saveDir,
+      notify,
+      has("save-archive") ? join(configDir(), "save-captures") : null,
+    );
   }
 
   server = new CompanionServer({

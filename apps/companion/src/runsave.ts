@@ -7,9 +7,14 @@
  * KB, so the cost is negligible; failures are silently tolerated.
  */
 
-import { readFileSync, watch, existsSync, type FSWatcher } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, watch, existsSync, type FSWatcher } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 import { decode } from "@msgpack/msgpack";
+
+/** Cap on archived snapshots per day — a long session with a busy shop writes
+ * a few KB per distinct state; this bounds worst-case disk use to ~1-2MB. */
+const ARCHIVE_CAP = 300;
 
 export interface RunSaveSummary {
   present: boolean;
@@ -26,10 +31,19 @@ export class RunSaveWatcher {
     present: false, decoded: false, updated_at: null, overview: null,
   };
 
+  private lastHash = "";
+  private archivedToday = 0;
+
   constructor(
     private saveDir: string,
     private onChange: () => void,
-  ) {}
+    /** When set, every DISTINCT decoded Run state is written here as JSON —
+     * the file is deleted by the game at run end, so archiving during play is
+     * the only way to study it afterwards. Off by default. */
+    private archiveDir: string | null = null,
+  ) {
+    if (archiveDir) mkdirSync(archiveDir, { recursive: true });
+  }
 
   start(): void {
     this.readOnce();
@@ -69,11 +83,31 @@ export class RunSaveWatcher {
         updated_at: new Date().toISOString(),
         overview: shallow(data),
       };
+      this.archive(data);
     } catch {
       this.summary = {
         present: true, decoded: false, updated_at: new Date().toISOString(), overview: null,
       };
     }
+  }
+
+  private archive(data: Record<string, unknown>): void {
+    if (!this.archiveDir) return;
+    const json = JSON.stringify(data, (_k, v: unknown) =>
+      v instanceof Uint8Array ? { $bytes: v.length, b64: Buffer.from(v).toString("base64") } : v);
+    const hash = createHash("sha1").update(json).digest("hex").slice(0, 10);
+    if (hash === this.lastHash) return;                    // unchanged state
+    this.lastHash = hash;
+    if (this.archivedToday === 0) {
+      // resume today's count across restarts so the cap holds
+      const today = new Date().toISOString().slice(0, 10);
+      this.archivedToday = readdirSync(this.archiveDir)
+        .filter((f) => f.startsWith(today)).length;
+    }
+    if (this.archivedToday >= ARCHIVE_CAP) return;
+    this.archivedToday += 1;
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    writeFileSync(join(this.archiveDir, `${stamp}-${hash}.json`), json);
   }
 }
 
