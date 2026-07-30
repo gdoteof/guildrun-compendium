@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "guildrun-compendium",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "assets": { "directory": "public", "binding": "ASSETS" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "guildrun", "database_id": "57c725a8-5b7b-4e42-bc50-29ea3d2b26b6" }
+  ],
+  "kv_namespaces": [
+    { "binding": "RAW_LOGS", "id": "a65ba24d742249ef9de58e1c61f27b58" },
+    { "binding": "RATE_LIMIT", "id": "6addfc924636476f830fa429d6fb01b1" }
+  ],
+  "triggers": { "crons": ["17 3 * * *"] },
+  "vars": { "MAX_FILES": "64", "MAX_FILE_BYTES": "16000000" },
+  "observability": { "enabled": true }
+}
