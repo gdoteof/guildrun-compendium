@@ -23,10 +23,21 @@ no runtime, no installer:
 Verify with [SHA256SUMS](https://github.com/gdoteof/guildrun-compendium/releases/latest/download/SHA256SUMS).
 Releases are built locally and published with `gh` — see [RELEASING.md](../../RELEASING.md).
 
+One-liners — macOS (either chip; curl also sidesteps Gatekeeper quarantine):
+
 ```bash
-chmod +x guildrun-companion-*    # mac/linux
-./guildrun-companion-linux-x64   # autodetects the game; open http://127.0.0.1:4646/
+curl -fsSL "https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-macos-$(uname -m | sed 's/x86_64/x64/')" -o guildrun-companion \
+  && chmod +x guildrun-companion && ./guildrun-companion
 ```
+
+Linux:
+
+```bash
+curl -fsSL https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64 -o guildrun-companion \
+  && chmod +x guildrun-companion && ./guildrun-companion
+```
+
+Then open http://127.0.0.1:4646/ and play.
 
 ## Run it
 

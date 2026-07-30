@@ -23,11 +23,21 @@ context change)/run-end uploads. Details + measurements in
 
 ## Run it
 
-```
-./guildrun-companion            # autodetects Steam installs (Win/Mac/Linux/Proton)
-# then open http://127.0.0.1:4646/
+macOS (either chip; curl sidesteps Gatekeeper quarantine):
+
+```bash
+curl -fsSL "https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-macos-$(uname -m | sed 's/x86_64/x64/')" -o guildrun-companion \
+  && chmod +x guildrun-companion && ./guildrun-companion
 ```
 
-macOS: browser downloads are quarantined — `xattr -d com.apple.quarantine <file>`,
-or download with curl. Windows: SmartScreen will warn on an unsigned binary —
-"More info → Run anyway", or verify against SHA256SUMS first.
+Linux:
+
+```bash
+curl -fsSL https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64 -o guildrun-companion \
+  && chmod +x guildrun-companion && ./guildrun-companion
+```
+
+Windows: download the `.exe` and run it (SmartScreen: "More info → Run anyway",
+or verify against SHA256SUMS first). Then open http://127.0.0.1:4646/ and play —
+the game is autodetected across Windows/Mac/Linux/Proton Steam installs
+(`--game-dir` to point elsewhere, e.g. a CrossOver bottle).

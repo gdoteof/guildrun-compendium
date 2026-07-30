@@ -45,8 +45,13 @@
       <a class="dl" href="https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64">🐧 Linux</a>
       <a class="dl" href="https://github.com/gdoteof/guildrun-compendium/releases/latest/download/SHA256SUMS">checksums</a>
     </p>
-    <p class="small">Run it, play Guildrun, open <code>http://127.0.0.1:4646/</code>.
-    macOS: <code>xattr -d com.apple.quarantine</code> after a browser download, or fetch with curl.</p>
+    <p class="small" style="margin-bottom:4px">Or paste one line — macOS (either chip; curl skips
+    Gatekeeper quarantine):</p>
+    <pre class="cmd">curl -fsSL "https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-macos-$(uname -m | sed 's/x86_64/x64/')" -o guildrun-companion &amp;&amp; chmod +x guildrun-companion &amp;&amp; ./guildrun-companion</pre>
+    <p class="small" style="margin-bottom:4px">Linux:</p>
+    <pre class="cmd">curl -fsSL https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64 -o guildrun-companion &amp;&amp; chmod +x guildrun-companion &amp;&amp; ./guildrun-companion</pre>
+    <p class="small">Then play Guildrun and open <code>http://127.0.0.1:4646/</code>.
+    Windows: download above and run (SmartScreen: “More info → Run anyway”, or verify checksums).</p>
   </div>
 
   <div class="card">
