@@ -41,7 +41,8 @@ export function header(active) {
     .map(([href, label]) =>
       `<a href="${href}" ${label === active ? 'style="color:var(--accent);font-weight:600"' : ""}>${label}</a>`)
     .join("");
-  return `<header class="site"><h1><a href="/">Guildrun Compendium</a></h1><nav>${nav}</nav>
+  return `<header class="site"><h1><a href="/">Guildrun Compendium</a></h1><nav>${nav}
+    <a href="https://github.com/gdoteof/guildrun-compendium" title="Source on GitHub">GitHub</a></nav>
     <span id="auth-slot" style="margin-left:auto" class="small"></span></header>`;
 }
 

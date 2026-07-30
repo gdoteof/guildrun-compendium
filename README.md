@@ -1,5 +1,9 @@
 # guildrun-compendium
 
+[![release](https://img.shields.io/github/v/release/gdoteof/guildrun-compendium?label=companion&color=2a78d6)](https://github.com/gdoteof/guildrun-compendium/releases/latest)
+[![license](https://img.shields.io/github/license/gdoteof/guildrun-compendium?color=52514e)](LICENSE)
+[![site](https://img.shields.io/website?url=https%3A%2F%2Fguildrun-compendium.laxity-03-hunger3397.workers.dev&label=compendium)](https://guildrun-compendium.laxity-03-hunger3397.workers.dev)
+
 Community stats compendium for [Guildrun](https://store.steampowered.com/app/4425970/) (Leyline).
 Players opt in by dragging their game's log folder onto a web page (or running a small script);
 the backend reconstructs their runs and derives tier rankings for heroes, items, and relics,

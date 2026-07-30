@@ -7,6 +7,27 @@ band) next to your party, items, relics, and shop sale offers.
 No game files are modified, nothing is injected — the game already writes everything we
 read.
 
+## Install
+
+Grab a single-file binary from the
+[latest release](https://github.com/gdoteof/guildrun-compendium/releases/latest) —
+no runtime, no installer:
+
+| platform | download |
+|---|---|
+| Windows x64 | [guildrun-companion-windows-x64.exe](https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-windows-x64.exe) |
+| macOS Apple Silicon | [guildrun-companion-macos-arm64](https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-macos-arm64) |
+| macOS Intel | [guildrun-companion-macos-x64](https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-macos-x64) |
+| Linux x64 | [guildrun-companion-linux-x64](https://github.com/gdoteof/guildrun-compendium/releases/latest/download/guildrun-companion-linux-x64) |
+
+Verify with [SHA256SUMS](https://github.com/gdoteof/guildrun-compendium/releases/latest/download/SHA256SUMS).
+Releases are built locally and published with `gh` — see [RELEASING.md](../../RELEASING.md).
+
+```bash
+chmod +x guildrun-companion-*    # mac/linux
+./guildrun-companion-linux-x64   # autodetects the game; open http://127.0.0.1:4646/
+```
+
 ## Run it
 
 With Node (from the repo):

@@ -13,6 +13,7 @@ import { UI_HTML } from "./ui-embedded.js";
 import type { LiveGame } from "./live.js";
 import type { CompendiumClient, TierMap } from "./compendium.js";
 import type { RunSaveWatcher } from "./runsave.js";
+import { VERSION } from "./version.js";
 
 const UI_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "ui");
 
@@ -26,6 +27,7 @@ export interface EnrichedState {
   };
   save: ReturnType<RunSaveWatcher["current"]> | null;
   tailer: { activeFile: string | null; offset: number; mode: string };
+  version: string;
 }
 
 export class CompanionServer {
@@ -100,6 +102,7 @@ export class CompanionServer {
       },
       save: this.deps.save?.current() ?? null,
       tailer: this.deps.tailerStatus(),
+      version: VERSION,
     };
   }
 

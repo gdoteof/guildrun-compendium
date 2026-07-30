@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Cut a companion release: build all targets locally, checksum, publish to
+# GitHub Releases. Deliberately NOT CI — bun cross-compiles every target from
+# one machine, so releases cost zero runner minutes and work offline until the
+# final `gh release create`.
+#
+#   tools/release.sh            # version from apps/companion/package.json
+#   tools/release.sh --dry-run  # build + checksum only, no publish
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+VERSION=$(node -p "require('./apps/companion/package.json').version")
+TAG="v${VERSION}"
+DIST="apps/companion/dist"
+
+echo "==> releasing guildrun-companion ${TAG}"
+
+echo "==> tests"
+pnpm --filter @guildrun/parser test >/dev/null
+pnpm --filter @guildrun/companion test >/dev/null
+pnpm -r typecheck >/dev/null
+echo "    parser golden + companion tests + typecheck: OK"
+
+echo "==> building all targets"
+rm -rf "$DIST"
+(cd apps/companion \
+  && pnpm gen:ui >/dev/null \
+  && bun build --compile --target=bun-linux-x64   src/index.ts --outfile dist/guildrun-companion-linux-x64 \
+  && bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile dist/guildrun-companion-macos-arm64 \
+  && bun build --compile --target=bun-darwin-x64  src/index.ts --outfile dist/guildrun-companion-macos-x64 \
+  && bun build --compile --target=bun-windows-x64 src/index.ts --outfile dist/guildrun-companion-windows-x64.exe)
+
+(cd "$DIST" && sha256sum guildrun-companion-* > SHA256SUMS)
+ls -la "$DIST"
+
+if [[ "${1:-}" == "--dry-run" ]]; then
+  echo "==> dry run: skipping tag + release"
+  exit 0
+fi
+
+echo "==> tagging ${TAG} and publishing release"
+git tag -f "$TAG"
+git push -f origin "$TAG"
+gh release create "$TAG" \
+  "$DIST"/guildrun-companion-linux-x64 \
+  "$DIST"/guildrun-companion-macos-arm64 \
+  "$DIST"/guildrun-companion-macos-x64 \
+  "$DIST"/guildrun-companion-windows-x64.exe \
+  "$DIST"/SHA256SUMS \
+  --title "guildrun-companion ${TAG}" \
+  --notes-file RELEASE_NOTES.md
+echo "==> done: https://github.com/gdoteof/guildrun-compendium/releases/tag/${TAG}"

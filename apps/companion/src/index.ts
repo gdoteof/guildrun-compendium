@@ -23,6 +23,7 @@ import { CompendiumClient } from "./compendium.js";
 import { RunSaveWatcher } from "./runsave.js";
 import { CaptureUploader } from "./uploader.js";
 import { CompanionServer } from "./server.js";
+import { VERSION } from "./version.js";
 
 const DEFAULT_SERVER = "https://guildrun-compendium.laxity-03-hunger3397.workers.dev";
 
@@ -33,11 +34,17 @@ function arg(name: string): string | undefined {
 const has = (name: string): boolean => process.argv.includes(`--${name}`);
 
 async function main(): Promise<void> {
+  if (has("version")) {
+    console.log(VERSION);
+    return;
+  }
   if (has("help")) {
     console.log(
-      "guildrun-companion [--game-dir <path>] [--port <n>] [--host <addr>]\n" +
-      "                   [--server <url>] [--no-save-watch] [--save-dir <path>]\n" +
-      "                   [--save-archive]   archive distinct Run-save states for research",
+      `guildrun-companion v${VERSION}\n` +
+      "  [--game-dir <path>] [--port <n>] [--host <addr>] [--server <url>]\n" +
+      "  [--no-save-watch] [--save-dir <path>] [--no-log-upload] [--no-capture-upload]\n" +
+      "  [--save-archive]   archive distinct Run-save states for research\n" +
+      "  [--version]",
     );
     return;
   }
@@ -132,7 +139,7 @@ async function main(): Promise<void> {
   const host = arg("host") ?? "127.0.0.1";
   const port = await server.listen(parseInt(arg("port") ?? "4646", 10), host);
 
-  console.log(`Guildrun Companion
+  console.log(`Guildrun Companion v${VERSION}
   game    ${paths.gameDir}
   log     ${activeFile ?? "(none yet — waiting for the game to write one)"}
   saves   ${save ? paths.saveDir : "(not watching)"}

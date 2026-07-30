@@ -59,9 +59,9 @@ const RANKS = { 1:"C", 2:"B", 3:"A", 4:"S" };
 function render(s) {
   const t = (type, ref) => tierB(s.tiers?.[type]?.[ref]);
   const meta = document.getElementById("meta");
-  meta.textContent = `${s.tailer.activeFile ?? "no log yet"} · ${s.tailer.mode} · ` +
+  meta.textContent = `v${s.version} · ${s.tailer.activeFile ?? "no log yet"} · ${s.tailer.mode} · ` +
     (s.live.in_run
-      ? `in run (difficulty ${s.live.run?.difficulty ?? "?"}, floor ${s.live.run?.current_floor ?? "?"})`
+      ? `in run (pool ${s.live.run?.difficulty ?? "?"}, floor ${s.live.run?.current_floor ?? "?"})`
       : "not in a run");
 
   let html = "";
