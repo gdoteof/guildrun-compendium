@@ -54,7 +54,10 @@
     <p>Log files contain your SteamID in a few file-path lines. At ingest the ID is used
     once to derive an anonymous identity (HMAC with a server-side secret), then scrubbed
     from the raw text before anything is stored. No raw SteamID is stored or served, and
-    nothing else in the logs is personal. Source:
+    nothing else in the logs is personal. Signing in through Steam verifies your identity
+    with Steam's OpenID service and stores only your public persona name against that same
+    anonymous identity — which is how your previously uploaded runs become "yours"
+    automatically. Source:
     <a href="https://github.com/gdoteof/guildrun-compendium">github.com/gdoteof/guildrun-compendium</a>.</p>
   </div>
 </main>

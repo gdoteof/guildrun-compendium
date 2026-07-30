@@ -30,9 +30,9 @@ try {
 
   main.innerHTML = `
     <h2 style="font-size:1.3rem;margin-bottom:2px">${esc(p.label)}</h2>
-    <p class="small">${p.anonymous
-      ? "Anonymous contributor — Steam sign-in (coming soon) will let you claim this profile."
-      : "Verified profile."}
+    <p class="small" id="who">${p.anonymous
+      ? 'Anonymous contributor — <a href="/auth/steam/login">sign in through Steam</a> to claim this profile if it is yours.'
+      : "Verified via Steam sign-in."}
       Contributing since ${esc(p.first_seen.slice(0, 10))}.</p>
 
     <div class="tiles">
@@ -93,6 +93,15 @@ try {
         </tr>`).join("")}
       </tbody></table>
     </div>`;
+  // mark the profile when it belongs to the signed-in viewer
+  try {
+    const me = await fetch("/api/me");
+    if (me.ok && (await me.json()).player.id === id) {
+      document.getElementById("who").innerHTML =
+        `<strong style="color:var(--good)">This is you.</strong> ` +
+        document.getElementById("who").innerHTML;
+    }
+  } catch { /* signed out */ }
 } catch {
   main.innerHTML = "<p>Player not found.</p>";
 }

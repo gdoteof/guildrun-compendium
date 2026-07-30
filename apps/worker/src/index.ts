@@ -9,6 +9,7 @@ import { KVRawStore, R2RawStore } from "./storage.js";
 import { handleUpload, reparseAll } from "./ingest.js";
 import { materializeStats } from "./aggregate.js";
 import { api } from "./api.js";
+import { auth, handleMe } from "./auth.js";
 
 type App = { Bindings: Env };
 
@@ -127,6 +128,8 @@ app.post("/api/admin/catalog", async (c) => {
   return c.json({ seeded: n });
 });
 
+app.route("/auth/steam", auth);
+app.get("/api/me", (c) => handleMe(c));
 app.route("/api", api);
 
 export default {

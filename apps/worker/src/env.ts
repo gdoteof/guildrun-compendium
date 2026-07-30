@@ -11,6 +11,9 @@ export interface Env {
   HMAC_SALT?: string;
   ADMIN_TOKEN?: string;
   TURNSTILE_SECRET?: string;
+  SESSION_SECRET?: string;
+  /** optional: official persona-name lookup; keyless XML fallback otherwise */
+  STEAM_API_KEY?: string;
 }
 
 export async function sha256Hex(data: string | ArrayBuffer): Promise<string> {

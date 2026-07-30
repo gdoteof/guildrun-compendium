@@ -41,8 +41,29 @@ export function header(active) {
     .map(([href, label]) =>
       `<a href="${href}" ${label === active ? 'style="color:var(--accent);font-weight:600"' : ""}>${label}</a>`)
     .join("");
-  return `<header class="site"><h1><a href="/">Guildrun Compendium</a></h1><nav>${nav}</nav></header>`;
+  return `<header class="site"><h1><a href="/">Guildrun Compendium</a></h1><nav>${nav}</nav>
+    <span id="auth-slot" style="margin-left:auto" class="small"></span></header>`;
 }
+
+/* Fill the header auth slot after the importing page has injected header().
+   Module import completes before the page script runs, so defer one task. */
+setTimeout(async () => {
+  const slot = document.getElementById("auth-slot");
+  if (!slot) return;
+  try {
+    const res = await fetch("/api/me");
+    if (res.ok) {
+      const { player } = await res.json();
+      slot.innerHTML =
+        `<a href="/player.html?id=${encodeURIComponent(player.id)}">${esc(player.label)}</a>
+         &middot; <a href="/auth/steam/logout">sign out</a>`;
+    } else {
+      slot.innerHTML = `<a href="/auth/steam/login">Sign in through Steam</a>`;
+    }
+  } catch {
+    /* leave slot empty */
+  }
+}, 0);
 
 export const entityLink = (type, ref, name) =>
   `<a href="/entity.html?type=${encodeURIComponent(type)}&ref=${encodeURIComponent(ref)}">${esc(name)}</a>`;
