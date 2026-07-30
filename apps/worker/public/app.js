@@ -35,6 +35,7 @@ export function header(active) {
   const nav = [
     ["/", "Overview"],
     ["/tiers.html", "Tier lists"],
+    ["/players.html", "Players"],
     ["/about.html", "Methodology"],
   ]
     .map(([href, label]) =>

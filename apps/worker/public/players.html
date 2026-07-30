@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Players — Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main>
+  <h2 style="font-size:1.15rem">Players</h2>
+  <p class="small">Everyone who has contributed runs. Names are anonymous hashes for now —
+  signing in with Steam to claim your profile is coming; the anonymous identity you see here
+  is what a sign-in will attach to.</p>
+  <div class="card">
+    <table class="stats"><thead><tr>
+      <th>player</th><th class="num">runs</th><th class="num">beaten</th>
+      <th>run beat rate</th><th class="num">battles W–L</th>
+      <th class="num">best difficulty beaten</th><th>last run</th>
+    </tr></thead><tbody id="rows"></tbody></table>
+  </div>
+</main>
+
+<script type="module">
+import { api, esc, header, winBar } from "/app.js";
+document.getElementById("hdr").outerHTML = header("Players");
+
+const d = await api("/players");
+document.getElementById("rows").innerHTML = d.players.map((p) => `
+  <tr>
+    <td><a href="/player.html?id=${encodeURIComponent(p.id)}">${esc(p.label)}</a>
+      ${p.anonymous ? '<span class="small">(anonymous)</span>' : ""}</td>
+    <td class="num">${p.runs}</td>
+    <td class="num">${p.beaten ?? 0}</td>
+    <td>${winBar(p.beaten ?? 0, p.runs)}</td>
+    <td class="num">${p.battles_won ?? 0}–${p.battles_lost ?? 0}</td>
+    <td class="num">${p.highest_difficulty_beaten ?? "–"}</td>
+    <td>${p.last_run_ts ? esc(p.last_run_ts.slice(0, 10)) : "–"}</td>
+  </tr>`).join("");
+</script>
+</body>
+</html>

@@ -8,8 +8,13 @@
     { "binding": "DB", "database_name": "guildrun", "database_id": "57c725a8-5b7b-4e42-bc50-29ea3d2b26b6" }
   ],
   "kv_namespaces": [
+    // RAW_LOGS is legacy: raw storage moved to R2; binding retained so the
+    // KV -> R2 migration endpoint stays runnable, remove once KV is emptied
     { "binding": "RAW_LOGS", "id": "a65ba24d742249ef9de58e1c61f27b58" },
     { "binding": "RATE_LIMIT", "id": "6addfc924636476f830fa429d6fb01b1" }
+  ],
+  "r2_buckets": [
+    { "binding": "RAW_R2", "bucket_name": "guildrun-logs" }
   ],
   "triggers": { "crons": ["17 3 * * *"] },
   "vars": { "MAX_FILES": "64", "MAX_FILE_BYTES": "16000000" },

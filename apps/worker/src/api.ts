@@ -131,6 +131,85 @@ api.get("/entity/:type/:ref", async (c) => {
   );
 });
 
+/** All contributors. Only anonymous hashes until Steam sign-in sets
+ * display_name; the short label is what the UI shows. */
+api.get("/players", async (c) => {
+  const rows = await c.env.DB
+    .prepare(
+      `SELECT p.id, p.display_name, p.first_seen,
+              COUNT(r.id) runs,
+              SUM(r.beaten) beaten,
+              SUM(r.battles_won) battles_won,
+              SUM(r.battles_lost) battles_lost,
+              MAX(CASE WHEN r.beaten = 1 THEN r.difficulty END) highest_difficulty_beaten,
+              MAX(r.start_ts) last_run_ts
+       FROM player p LEFT JOIN run r ON r.player_id = p.id
+       GROUP BY p.id ORDER BY runs DESC`,
+    )
+    .all<{ id: string; display_name: string | null; first_seen: string; runs: number }>();
+  return c.json(
+    {
+      players: rows.results.map((p) => ({
+        ...p,
+        label: p.display_name ?? `Guest ${p.id.slice(0, 8)}`,
+        anonymous: p.display_name === null,
+      })),
+    },
+    200, { "Cache-Control": CACHE },
+  );
+});
+
+api.get("/players/:id", async (c) => {
+  const id = c.req.param("id");
+  const db = c.env.DB;
+  const player = await db
+    .prepare("SELECT id, display_name, first_seen FROM player WHERE id = ?")
+    .bind(id)
+    .first<{ id: string; display_name: string | null; first_seen: string }>();
+  if (!player) return c.json({ error: "not found" }, 404);
+
+  const [runs, heroes, difficulties] = await Promise.all([
+    db.prepare(
+      `SELECT id, seed, start_ts, difficulty, floors_reached, beaten, battles_won,
+              battles_lost, lives_lost, endless_battles
+       FROM run WHERE player_id = ? ORDER BY start_ts DESC`,
+    ).bind(id).all(),
+    db.prepare(
+      `SELECT bu.hero_ref ref, cat.name,
+              COUNT(DISTINCT b.id) n_battles,
+              COUNT(DISTINCT CASE WHEN b.outcome = 'victory' THEN b.id END) battle_wins,
+              COUNT(DISTINCT r.id) n_runs,
+              COUNT(DISTINCT CASE WHEN r.beaten = 1 THEN r.id END) run_beats,
+              (SELECT COUNT(*) FROM battle_death bd
+                JOIN battle b2 ON b2.id = bd.battle_id JOIN run r2 ON r2.id = b2.run_id
+                WHERE r2.player_id = ? AND bd.hero_ref = bu.hero_ref) deaths
+       FROM battle_unit bu
+       JOIN battle b ON b.id = bu.battle_id JOIN run r ON r.id = b.run_id
+       LEFT JOIN catalog cat ON cat.entity_type = 'hero' AND cat.ref = bu.hero_ref
+       WHERE r.player_id = ? AND bu.reserve = 0
+       GROUP BY bu.hero_ref ORDER BY n_battles DESC`,
+    ).bind(id, id).all(),
+    db.prepare(
+      `SELECT difficulty, COUNT(*) runs, SUM(beaten) beaten
+       FROM run WHERE player_id = ? GROUP BY difficulty ORDER BY difficulty`,
+    ).bind(id).all(),
+  ]);
+
+  return c.json(
+    {
+      player: {
+        ...player,
+        label: player.display_name ?? `Guest ${player.id.slice(0, 8)}`,
+        anonymous: player.display_name === null,
+      },
+      runs: runs.results,
+      heroes: heroes.results,
+      difficulties: difficulties.results,
+    },
+    200, { "Cache-Control": CACHE },
+  );
+});
+
 api.get("/runs", async (c) => {
   const rows = await c.env.DB
     .prepare(

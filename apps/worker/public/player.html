@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player — Guildrun Compendium</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main id="main"><p class="small">Loading…</p></main>
+
+<script type="module">
+import { api, esc, header, winBar, entityLink } from "/app.js";
+document.getElementById("hdr").outerHTML = header("Players");
+
+const id = new URLSearchParams(location.search).get("id");
+const main = document.getElementById("main");
+
+try {
+  const d = await api(`/players/${encodeURIComponent(id)}`);
+  const p = d.player;
+  document.title = `${p.label} — Guildrun Compendium`;
+  const runs = d.runs;
+  const beaten = runs.filter((r) => r.beaten).length;
+  const won = runs.reduce((a, r) => a + (r.battles_won ?? 0), 0);
+  const lost = runs.reduce((a, r) => a + (r.battles_lost ?? 0), 0);
+  const best = Math.max(0, ...runs.filter((r) => r.beaten).map((r) => r.difficulty ?? 0));
+  const deepest = Math.max(0, ...runs.map((r) => r.floors_reached ?? 0));
+
+  main.innerHTML = `
+    <h2 style="font-size:1.3rem;margin-bottom:2px">${esc(p.label)}</h2>
+    <p class="small">${p.anonymous
+      ? "Anonymous contributor — Steam sign-in (coming soon) will let you claim this profile."
+      : "Verified profile."}
+      Contributing since ${esc(p.first_seen.slice(0, 10))}.</p>
+
+    <div class="tiles">
+      <div class="tile"><div class="v">${runs.length}</div><div class="k">runs</div></div>
+      <div class="tile"><div class="v">${beaten}</div><div class="k">beaten</div></div>
+      <div class="tile"><div class="v">${runs.length ? Math.round((beaten / runs.length) * 100) + "%" : "–"}</div><div class="k">beat rate</div></div>
+      <div class="tile"><div class="v">${won + lost ? Math.round((won / (won + lost)) * 100) + "%" : "–"}</div><div class="k">battle win rate</div></div>
+      <div class="tile"><div class="v">${best || "–"}</div><div class="k">best difficulty beaten</div></div>
+      <div class="tile"><div class="v">${deepest}</div><div class="k">deepest floor</div></div>
+    </div>
+
+    ${d.difficulties.length > 1 ? `<div class="card">
+      <h3 style="margin-top:0;font-size:0.95rem">By difficulty</h3>
+      <table class="stats"><thead><tr>
+        <th class="num">difficulty</th><th class="num">runs</th><th>beat rate</th>
+      </tr></thead><tbody>
+        ${d.difficulties.map((x) => `<tr>
+          <td class="num">${x.difficulty ?? "–"}</td>
+          <td class="num">${x.runs}</td>
+          <td>${winBar(x.beaten ?? 0, x.runs)}</td>
+        </tr>`).join("")}
+      </tbody></table>
+    </div>` : ""}
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:0.95rem">Heroes played</h3>
+      <table class="stats"><thead><tr>
+        <th>hero</th><th class="num">battles</th><th>battle win rate</th>
+        <th class="num">runs</th><th>run beat rate</th><th class="num">deaths</th>
+      </tr></thead><tbody>
+        ${d.heroes.map((h) => `<tr>
+          <td>${entityLink("hero", h.ref, h.name ?? h.ref)}</td>
+          <td class="num">${h.n_battles}</td>
+          <td>${winBar(h.battle_wins, h.n_battles)}</td>
+          <td class="num">${h.n_runs}</td>
+          <td>${winBar(h.run_beats, h.n_runs)}</td>
+          <td class="num">${h.deaths || ""}</td>
+        </tr>`).join("")}
+      </tbody></table>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-top:0;font-size:0.95rem">Run history</h3>
+      <table class="stats"><thead><tr>
+        <th>started</th><th class="num">difficulty</th><th class="num">floors</th>
+        <th class="num">W</th><th class="num">L</th><th class="num">lives lost</th><th>result</th>
+      </tr></thead><tbody>
+        ${runs.map((r) => `<tr>
+          <td><a href="/run.html?id=${r.id}">${esc(r.start_ts.slice(0, 16))}</a></td>
+          <td class="num">${r.difficulty ?? "–"}</td>
+          <td class="num">${r.floors_reached}</td>
+          <td class="num">${r.battles_won}</td>
+          <td class="num">${r.battles_lost}</td>
+          <td class="num">${r.lives_lost ?? ""}</td>
+          <td>${r.beaten
+            ? `<strong style="color:var(--good)">BEATEN</strong>${r.endless_battles ? ` <span class="small">+${r.endless_battles} endless</span>` : ""}`
+            : `<span class="small">died floor ${r.floors_reached}</span>`}</td>
+        </tr>`).join("")}
+      </tbody></table>
+    </div>`;
+} catch {
+  main.innerHTML = "<p>Player not found.</p>";
+}
+</script>
+</body>
+</html>

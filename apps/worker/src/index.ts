@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import type { Env } from "./env.js";
-import { KVRawStore } from "./storage.js";
+import { KVRawStore, R2RawStore } from "./storage.js";
 import { handleUpload, reparseAll } from "./ingest.js";
 import { materializeStats } from "./aggregate.js";
 import { api } from "./api.js";
@@ -52,7 +52,7 @@ app.post("/api/upload", async (c) => {
     }
   }
 
-  const store = new KVRawStore(c.env.RAW_LOGS);
+  const store = new R2RawStore(c.env.RAW_R2);
   const result = await handleUpload(c.env, store, form);
   if (result.status === 200 && !result.body["duplicate"]) {
     c.executionCtx.waitUntil(materializeStats(c.env.DB));
@@ -67,9 +67,27 @@ function adminOk(c: { env: Env; req: { header: (k: string) => string | undefined
 
 app.post("/api/admin/reparse", async (c) => {
   if (!adminOk(c)) return c.json({ error: "unauthorized" }, 403);
-  const result = await reparseAll(c.env, new KVRawStore(c.env.RAW_LOGS));
+  const result = await reparseAll(c.env, new R2RawStore(c.env.RAW_R2));
   const stats = await materializeStats(c.env.DB);
   return c.json({ ...result, stat_rows: stats.rows });
+});
+
+/** One-time KV -> R2 raw-blob migration (idempotent: skips keys already in R2). */
+app.post("/api/admin/migrate-raw", async (c) => {
+  if (!adminOk(c)) return c.json({ error: "unauthorized" }, 403);
+  const kv = new KVRawStore(c.env.RAW_LOGS);
+  const r2 = new R2RawStore(c.env.RAW_R2);
+  let copied = 0, skipped = 0, cursor: string | undefined;
+  do {
+    const page = await kv.list(cursor);
+    for (const hash of page.hashes) {
+      if ((await r2.get(hash)) !== null) { skipped++; continue; }
+      const text = await kv.get(hash);
+      if (text !== null) { await r2.put(hash, text); copied++; }
+    }
+    cursor = page.cursor;
+  } while (cursor);
+  return c.json({ copied, skipped });
 });
 
 app.post("/api/admin/aggregate", async (c) => {

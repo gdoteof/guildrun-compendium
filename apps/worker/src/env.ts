@@ -1,6 +1,8 @@
 export interface Env {
   DB: D1Database;
+  /** legacy raw store; kept for the KV -> R2 migration endpoint */
   RAW_LOGS: KVNamespace;
+  RAW_R2: R2Bucket;
   RATE_LIMIT: KVNamespace;
   ASSETS: Fetcher;
   MAX_FILES: string;
