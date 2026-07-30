@@ -21,6 +21,13 @@ raw logs (R2, SteamIDs scrubbed at ingest)
             └─ read API + stats site   ← a future companion app consumes this same API
 ```
 
+**Live:** https://guildrun-compendium.laxity-03-hunger3397.workers.dev — drag your
+`Guildrun_Data` folder onto the home page, or run the script:
+
+```bash
+python3 tools/collect/collect.py            # autodetects Steam installs (Win/Linux/Proton)
+```
+
 ## Workspace
 
 | path | what |

@@ -8,3 +8,4 @@ tools/catalog/catalog.json
 tools/catalog/loc_en.json
 venv/
 __pycache__/
+.secrets.production
