@@ -1,0 +1,731 @@
+{
+ "heroes": {
+  "Hero_26": {
+   "name": "Kai",
+   "classes": [
+    "HeroClass_1"
+   ],
+   "abilities": [
+    "ActiveAbility_28"
+   ]
+  },
+  "Hero_14": {
+   "name": "Funke",
+   "classes": [
+    "HeroClass_7"
+   ],
+   "abilities": [
+    "ActiveAbility_14"
+   ]
+  },
+  "Hero_27": {
+   "name": "Grace",
+   "classes": [
+    "HeroClass_6"
+   ],
+   "abilities": [
+    "ActiveAbility_29"
+   ]
+  },
+  "Hero_2": {
+   "name": "Hoyoung",
+   "classes": [
+    "HeroClass_4",
+    "HeroClass_6"
+   ],
+   "abilities": [
+    "ActiveAbility_2"
+   ]
+  },
+  "Hero_24": {
+   "name": "Dragomir",
+   "classes": [
+    "HeroClass_3",
+    "HeroClass_4"
+   ],
+   "abilities": [
+    "ActiveAbility_24"
+   ]
+  },
+  "Hero_18": {
+   "name": "Rip",
+   "classes": [
+    "HeroClass_3",
+    "HeroClass_4"
+   ],
+   "abilities": [
+    "ActiveAbility_18"
+   ]
+  },
+  "Hero_22": {
+   "name": "Pimenta",
+   "classes": [
+    "HeroClass_2",
+    "HeroClass_5",
+    "HeroClass_7"
+   ],
+   "abilities": [
+    "ActiveAbility_22"
+   ]
+  },
+  "Hero_6": {
+   "name": "Aria",
+   "classes": [
+    "HeroClass_7"
+   ],
+   "abilities": [
+    "ActiveAbility_6"
+   ]
+  },
+  "Hero_11": {
+   "name": "Rowan",
+   "classes": [
+    "HeroClass_2",
+    "HeroClass_3"
+   ],
+   "abilities": [
+    "ActiveAbility_11"
+   ]
+  },
+  "Hero_21": {
+   "name": "Ming",
+   "classes": [
+    "HeroClass_3"
+   ],
+   "abilities": [
+    "ActiveAbility_21"
+   ]
+  },
+  "Hero_12": {
+   "name": "Skorn",
+   "classes": [
+    "HeroClass_2"
+   ],
+   "abilities": [
+    "ActiveAbility_12"
+   ]
+  },
+  "Hero_8": {
+   "name": "Pollen",
+   "classes": [
+    "HeroClass_6",
+    "HeroClass_7"
+   ],
+   "abilities": [
+    "ActiveAbility_8"
+   ]
+  },
+  "Hero_15": {
+   "name": "Tilly",
+   "classes": [
+    "HeroClass_1",
+    "HeroClass_5"
+   ],
+   "abilities": [
+    "ActiveAbility_15"
+   ]
+  },
+  "Hero_13": {
+   "name": "Logan",
+   "classes": [
+    "HeroClass_1"
+   ],
+   "abilities": [
+    "ActiveAbility_13"
+   ]
+  },
+  "Hero_17": {
+   "name": "Ratna",
+   "classes": [
+    "HeroClass_4",
+    "HeroClass_6",
+    "HeroClass_7"
+   ],
+   "abilities": [
+    "ActiveAbility_17"
+   ]
+  },
+  "Hero_7": {
+   "name": "Nyx",
+   "classes": [
+    "HeroClass_4",
+    "HeroClass_5"
+   ],
+   "abilities": []
+  },
+  "Hero_23": {
+   "name": "Sal",
+   "classes": [
+    "HeroClass_1",
+    "HeroClass_5",
+    "HeroClass_7"
+   ],
+   "abilities": [
+    "ActiveAbility_23"
+   ]
+  },
+  "Hero_4": {
+   "name": "Yuuna",
+   "classes": [
+    "HeroClass_4"
+   ],
+   "abilities": [
+    "ActiveAbility_4"
+   ]
+  },
+  "Hero_3": {
+   "name": "Reyna",
+   "classes": [
+    "HeroClass_1",
+    "HeroClass_3"
+   ],
+   "abilities": [
+    "ActiveAbility_3"
+   ]
+  },
+  "Hero_16": {
+   "name": "Gustav",
+   "classes": [
+    "HeroClass_2",
+    "HeroClass_6"
+   ],
+   "abilities": [
+    "ActiveAbility_16"
+   ]
+  },
+  "Hero_10": {
+   "name": "Fiona",
+   "classes": [
+    "HeroClass_3",
+    "HeroClass_6"
+   ],
+   "abilities": [
+    "ActiveAbility_10"
+   ]
+  },
+  "Hero_5": {
+   "name": "Zuri",
+   "classes": [
+    "HeroClass_2",
+    "HeroClass_4"
+   ],
+   "abilities": [
+    "ActiveAbility_5"
+   ]
+  },
+  "Hero_1": {
+   "name": "Irini",
+   "classes": [
+    "HeroClass_5"
+   ],
+   "abilities": []
+  },
+  "Hero_9": {
+   "name": "Niklas",
+   "classes": [
+    "HeroClass_3"
+   ],
+   "abilities": [
+    "ActiveAbility_9"
+   ]
+  },
+  "Hero_20": {
+   "name": "Karsu",
+   "classes": [
+    "HeroClass_5"
+   ],
+   "abilities": [
+    "ActiveAbility_20"
+   ]
+  }
+ },
+ "relics": {
+  "Relic_1000": "Warrior's Medallion",
+  "Relic_2037": "Burn Catalyst",
+  "Relic_1004": "Duelist's Medallion",
+  "Relic_4007": "Slaughter Mandate",
+  "Relic_724": "Starter Kit: Sustained Shard Boost",
+  "Relic_2014": "Arcane Amplifier",
+  "Relic_2028": "Shard Constructor",
+  "Relic_1029": "Victory Vessel",
+  "Relic_4002": "Vanguard's Titanic Engine",
+  "Relic_2049": "Plated Codex",
+  "Relic_2001": "Warrior's Emblem",
+  "Relic_2004": "Vanguard's Memento",
+  "Relic_3041": "Poison Ascendancy",
+  "Relic_2044": "Shield Conduit",
+  "Relic_534": "Vanguard's Endurance Banner",
+  "Relic_3027": "Acceleration Prism",
+  "Relic_1021": "Burn Vessel",
+  "Relic_2053": "Frontline Barricader",
+  "Relic_1009": "Fire Starter",
+  "Relic_2010": "Mystic's Memento",
+  "Relic_2023": "Acceleration Conduit",
+  "Relic_2019": "Deceleration Reactor",
+  "Relic_4004": "Duelist's Momentum Engine",
+  "Relic_725": "Starter Kit: Instant Rare Attack Item",
+  "Relic_1025": "Critical Vessel",
+  "Relic_3011": "Mystic's Inundation Prism",
+  "Relic_1001": "Tank's Medallion",
+  "Relic_4026": "Godspeed Ascension Engine",
+  "Relic_4006": "Mage's Cataclysm Engine",
+  "Relic_3006": "Assassin's Elevation Prism",
+  "Relic_1006": "Mage's Medallion",
+  "Relic_2026": "Precision Conduit",
+  "Relic_1016": "Frontline Defender",
+  "Relic_1012": "Acceleration Lattice",
+  "Relic_2043": "Shield Bastion",
+  "Relic_4025": "Acceleration Legacy Crystal",
+  "Relic_3023": "Deceleration Aegis",
+  "Relic_548": "Assassin's Smokescreen Banner",
+  "Relic_2046": "Enchanted Codex",
+  "Relic_2042": "Shield Repriser",
+  "Relic_1007": "Poison Bloom",
+  "Relic_2048": "Vital Codex",
+  "Relic_786": "Strange Blue Fruit: Crit Drained",
+  "Relic_3019": "Trigger Synchrony Activator",
+  "Relic_3035": "Shield Ascendancy",
+  "Relic_2040": "Plague Amplifier",
+  "Relic_3037": "Shard Maximizer",
+  "Relic_1023": "Deceleration Vessel",
+  "Relic_720": "Starter Kit: Instant Shards",
+  "Relic_1014": "Shield Generator",
+  "Relic_3017": "Trigger Safeguard Activator",
+  "Relic_1026": "Shield Vessel",
+  "Relic_1018": "Poison Vessel",
+  "Relic_2003": "Tank's Emblem",
+  "Relic_788": "Strange Blue Fruit: Mana Regen Drained",
+  "Relic_1008": "Frost Surge",
+  "Relic_2057": "Protective Differentiator",
+  "Relic_1003": "Assassin's Medallion",
+  "Relic_542": "Vanguard's Flamefists Banner",
+  "Relic_3000": "Warrior's Exaltation Prism",
+  "Relic_4001": "Tank's Absolution Engine",
+  "Relic_3040": "Poison Migrator",
+  "Relic_3021": "Deceleration Apotheosis",
+  "Relic_6013": "Fast Track",
+  "Relic_734": "Starter Kit: Temporary Item Discount",
+  "Relic_2045": "Combative Codex",
+  "Relic_1019": "Basic Differentiator",
+  "Relic_2002": "Tank's Memento",
+  "Relic_3052": "Martial Backup Prism",
+  "Relic_510": "Warrior's Bravery Banner",
+  "Relic_1015": "Plague Generator",
+  "Relic_4500": "Harmony Crystal",
+  "Relic_6006": "Crest Windfall",
+  "Relic_730": "Starter Kit: Instant Rare Mana Regen Item",
+  "Relic_1020": "Frost Vessel",
+  "Relic_4027": "Shard Power Extractor",
+  "Relic_3045": "Glacial Guard Prism",
+  "Relic_3042": "Blight Resonance Prism",
+  "Relic_589": "Mystic's Protection Banner",
+  "Relic_2020": "Deceleration Conduit",
+  "Relic_2056": "Advanced Differentiator",
+  "Relic_2032": "Poison Conduit",
+  "Relic_2011": "Mystic's Emblem",
+  "Relic_2013": "Mage's Emblem",
+  "Relic_6029": "Duelist Crest",
+  "Relic_761": "Starter Kit: Temporary Attack Speed Growth",
+  "Relic_716": "Deceleration Accumulator",
+  "Relic_3020": "Deceleration Ascendancy",
+  "Relic_2029": "Generation Conduit",
+  "Relic_6003": "Shard Pouch",
+  "Relic_702": "Frost Bauble",
+  "Relic_2052": "Frontline Embiggener",
+  "Relic_4035": "Defensive Energy Crystal",
+  "Relic_1011": "Deceleration Lattice",
+  "Relic_3013": "Mage's Transmutation Prism",
+  "Relic_2041": "Plague Conduit",
+  "Relic_3015": "Perfect Divergence Prism",
+  "Relic_4036": "Martial Energy Crystal",
+  "Relic_4019": "Venom Amplification Engine",
+  "Relic_3014": "Mage's Administration Filigree",
+  "Relic_6015": "Stability System",
+  "Relic_1005": "Mystic's Medallion",
+  "Relic_6005": "Mystery Charm",
+  "Relic_2024": "Precision Nexus",
+  "Relic_2059": "Arcane Conduit",
+  "Relic_4005": "Mystic's Abundance Engine",
+  "Relic_2008": "Duelist's Memento",
+  "Relic_6030": "Mystic Crest",
+  "Relic_723": "Starter Kit: Temporary Shard Boost",
+  "Relic_715": "Deceleration Resonator",
+  "Relic_1024": "Acceleration Vessel",
+  "Relic_4037": "Arcane Energy Crystal",
+  "Relic_527": "Tank's Frostplate Banner",
+  "Relic_2054": "Backline Sharpener",
+  "Relic_2016": "Defensive Amplifier",
+  "Relic_6026": "Tank Crest",
+  "Relic_2006": "Assassin's Memento",
+  "Relic_729": "Starter Kit: Instant Rare Attack Speed Item",
+  "Relic_6028": "Assassin Crest",
+  "Relic_3044": "Frost Ascendancy",
+  "Relic_2058": "Violence Conduit",
+  "Relic_597": "Mage's Frostbite Banner",
+  "Relic_2030": "Poison Amplifier",
+  "Relic_3050": "Plague Ascendancy",
+  "Relic_2036": "Burn Amplifier",
+  "Relic_631": "Mystic's Enchanted Reflection",
+  "Relic_2034": "Frost Catalyst",
+  "Relic_3016": "Perfect Unity Prism",
+  "Relic_3043": "Frost Migrator",
+  "Relic_582": "Mystic's Prosperity Banner",
+  "Relic_4020": "Glacial Decay Engine",
+  "Relic_4022": "Plague Transmission Engine",
+  "Relic_3022": "Deceleration Corruptor",
+  "Relic_6023": "Mystic Equipment",
+  "Relic_2039": "Plague Harvester",
+  "Relic_3024": "Deceleration Filigree",
+  "Relic_4017": "Critical Singularity",
+  "Relic_799": "Strange Yellow Fruit",
+  "Relic_4023": "Deceleration Legacy Crystal",
+  "Relic_4024": "The Riftbreaker",
+  "Relic_3025": "Acceleration Ascendancy",
+  "Relic_900": "The Red Rift",
+  "Relic_6017": "Legacy Charm",
+  "Relic_763": "Starter Kit: Temporary Magic Growth",
+  "Relic_6007": "Relic Bazaar",
+  "Relic_711": "Acceleration Fluctuator",
+  "Relic_3031": "Critical Absorption Prism",
+  "Relic_4028": "Rift Storm Invoker",
+  "Relic_784": "Strange Blue Fruit: Max HP Drained",
+  "Relic_2015": "Martial Amplifier",
+  "Relic_758": "Starter Kit: Temporary Max HP Growth",
+  "Relic_1002": "Vanguard's Medallion",
+  "Relic_509": "Warrior's Mending Banner",
+  "Relic_1010": "Shard Lattice",
+  "Relic_701": "Poison Accumulator",
+  "Relic_2018": "Deceleration Nexus",
+  "Relic_757": "Starter Kit: Temporary Attack Growth",
+  "Relic_1028": "Divergence Vessel",
+  "Relic_3034": "Shield Converter",
+  "Relic_537": "Vanguard's Aegis Banner",
+  "Relic_626": "Vanguard's Plated Reflection",
+  "Relic_778": "Starter Kit: Sustained Defense",
+  "Relic_3051": "Arcane Backup Prism",
+  "Relic_585": "Mystic's Barrier Banner",
+  "Relic_2005": "Vanguard's Emblem",
+  "Relic_6018": "Warrior Equipment",
+  "Relic_2031": "Poison Catalyst",
+  "Relic_780": "Starter Kit: Sustained Attack Speed",
+  "Relic_713": "Acceleration Accumulator",
+  "Relic_2050": "Precise Codex",
+  "Relic_3005": "Vanguard's Amplification Filigree",
+  "Relic_1013": "Precision Lattice",
+  "Relic_6001": "Starter Bundle",
+  "Relic_1022": "Shard Vessel",
+  "Relic_6019": "Tank Equipment",
+  "Relic_3054": "Momentous Differentiator",
+  "Relic_551": "Assassin's Patience Banner",
+  "Relic_3028": "Immolation Accelerator",
+  "Relic_4018": "Shield Fragmentation Engine",
+  "Relic_3026": "Acceleration Immunizer",
+  "Relic_624": "Tank's Vital Reflection",
+  "Relic_6024": "Mage Equipment",
+  "Relic_731": "Starter Kit: Instant Rare Magic Item",
+  "Relic_3009": "Duelist's Profusion Filigree",
+  "Relic_6027": "Vanguard Crest"
+ },
+ "classes": {
+  "HeroClass_1": [
+   "Gustav",
+   "Irini",
+   "Kai",
+   "Logan",
+   "Pimenta",
+   "Pollen",
+   "Ratna",
+   "Reyna",
+   "Sal",
+   "Tilly"
+  ],
+  "HeroClass_7": [
+   "Aria",
+   "Funke",
+   "Grace",
+   "Kai",
+   "Pimenta",
+   "Pollen",
+   "Ratna",
+   "Reyna",
+   "Sal"
+  ],
+  "HeroClass_6": [
+   "Fiona",
+   "Grace",
+   "Gustav",
+   "Hoyoung",
+   "Pollen",
+   "Ratna",
+   "Sal",
+   "Zuri"
+  ],
+  "HeroClass_4": [
+   "Dragomir",
+   "Hoyoung",
+   "Kai",
+   "Ming",
+   "Nyx",
+   "Ratna",
+   "Rip",
+   "Sal",
+   "Skorn",
+   "Yuuna",
+   "Zuri"
+  ],
+  "HeroClass_3": [
+   "Dragomir",
+   "Fiona",
+   "Kai",
+   "Ming",
+   "Niklas",
+   "Pollen",
+   "Ratna",
+   "Reyna",
+   "Rip",
+   "Rowan",
+   "Zuri"
+  ],
+  "HeroClass_2": [
+   "Gustav",
+   "Hoyoung",
+   "Karsu",
+   "Pimenta",
+   "Pollen",
+   "Rowan",
+   "Skorn",
+   "Zuri"
+  ],
+  "HeroClass_5": [
+   "Aria",
+   "Irini",
+   "Karsu",
+   "Nyx",
+   "Pimenta",
+   "Rowan",
+   "Sal",
+   "Tilly"
+  ]
+ },
+ "items": [
+  "tem_101",
+  "tem_102",
+  "tem_103",
+  "tem_104",
+  "tem_105",
+  "tem_106",
+  "tem_107",
+  "tem_108",
+  "tem_109",
+  "tem_110",
+  "tem_111",
+  "tem_112",
+  "tem_113",
+  "tem_114",
+  "tem_116",
+  "tem_117",
+  "tem_118",
+  "tem_119",
+  "tem_120",
+  "tem_121",
+  "tem_122",
+  "tem_123",
+  "tem_124",
+  "tem_125",
+  "tem_305",
+  "tem_309",
+  "tem_311",
+  "tem_318",
+  "tem_319",
+  "tem_321",
+  "tem_401",
+  "tem_404",
+  "tem_411",
+  "tem_412",
+  "tem_413",
+  "tem_416",
+  "tem_418",
+  "tem_420",
+  "tem_421",
+  "tem_500",
+  "tem_501",
+  "tem_502",
+  "tem_503",
+  "tem_505",
+  "tem_601",
+  "tem_602",
+  "tem_603",
+  "tem_604",
+  "tem_605",
+  "tem_606",
+  "tem_607",
+  "tem_608",
+  "tem_609",
+  "tem_610",
+  "tem_611",
+  "tem_614",
+  "tem_615",
+  "tem_616",
+  "tem_617",
+  "tem_618",
+  "tem_620",
+  "tem_621",
+  "tem_622",
+  "tem_623",
+  "tem_624",
+  "tem_625",
+  "tem_626",
+  "tem_627",
+  "tem_628",
+  "tem_629",
+  "tem_630",
+  "tem_631",
+  "tem_632",
+  "tem_633",
+  "tem_634",
+  "tem_635",
+  "tem_636",
+  "tem_637",
+  "tem_638",
+  "tem_639",
+  "tem_640",
+  "tem_702",
+  "tem_703",
+  "tem_704",
+  "tem_706",
+  "tem_709",
+  "tem_710",
+  "tem_711",
+  "tem_712",
+  "tem_713",
+  "tem_714",
+  "tem_715",
+  "tem_720",
+  "tem_722",
+  "tem_724",
+  "tem_725",
+  "tem_726",
+  "tem_727",
+  "tem_730",
+  "tem_731",
+  "tem_732",
+  "tem_733",
+  "tem_735",
+  "tem_736",
+  "tem_738",
+  "tem_801",
+  "tem_802",
+  "tem_803",
+  "tem_804",
+  "tem_805",
+  "tem_806"
+ ],
+ "enemies": {
+  "Turtle": 41,
+  "Mushroom Tank": 145,
+  "Mushroom Archer": 116,
+  "Slime": 169,
+  "Spider": 78,
+  "Kai": 19,
+  "Hoyoung": 7,
+  "Mushroom Fire Mage": 74,
+  "Demon": 15,
+  "Dragomir": 9,
+  "Grace": 18,
+  "Pimenta": 18,
+  "Aria": 13,
+  "Mushroom Frost Mage": 57,
+  "Plant Monster": 7,
+  "Skorn": 18,
+  "Lizard": 52,
+  "Snake": 100,
+  "Pollen": 45,
+  "Ming": 16,
+  "Poison Dragon": 3,
+  "Mushroom Knight": 38,
+  "Hydra": 12,
+  "Tilly": 9,
+  "Logan": 21,
+  "Nyx": 9,
+  "Ratna": 10,
+  "Forest Golem": 4,
+  "Yuuna": 8,
+  "Sal": 12,
+  "Reyna": 21,
+  "Frost Dragon": 3,
+  "Zuri": 22,
+  "Rip": 3,
+  "Gustav": 9,
+  "Fire Dragon": 2,
+  "Fiona": 23,
+  "Rowan": 15,
+  "Niklas": 5,
+  "Karsu": 1,
+  "Irini": 5,
+  "Funke": 1
+ },
+ "events": {
+  "Small Defense Bonus": 1,
+  "Path of Agression": 4,
+  "Trial: Endurance": 6,
+  "First Campfire": 29,
+  "The Jagged Divide": 5,
+  "Guild Master's Gift": 40,
+  "Path of Growth": 9,
+  "Strange Fruits": 10,
+  "The Guild Banner": 15,
+  "The Curse of the Kiss": 2,
+  "Second Campfire": 11,
+  "Crystalline Prison": 4,
+  "The Slumbering Monster": 7,
+  "Path of Sanctuary": 11,
+  "Trial: Demolition": 6,
+  "The Ringing Fall": 11,
+  "Random Epic Relic": 8,
+  "The Cartograph": 7,
+  "The Void Beast": 3,
+  "The Debtor": 3,
+  "Trial: Rematch": 6,
+  "Rank-Up Re-Roll": 1,
+  "Choose a Rare Relic": 1,
+  "HP/S Boost": 1,
+  "The Rift Puppy": 4,
+  "The Nest": 4,
+  "Trial: Single Combat": 2,
+  "The Reflecting Pool": 3,
+  "S-Rank Hero": 4,
+  "Choose an Epic Item": 2,
+  "The Well of Temptations": 1,
+  "Blessing of Hermes": 1
+ },
+ "crossroads": {
+  "Permanently increase a Hero's Defense by 15.": 1,
+  "Get a special item or relic with offensive properties.": 4,
+  "A moment of peace.": 40,
+  "Gain stats, or choose to fight stronger enemies for future rewards.": 5,
+  "A gift for your newly-formed guild.": 40,
+  "Get a special item or relic which pays off in the future.": 9,
+  "": 12,
+  "Gain immediate or future power, for a price.": 10,
+  "Craft a banner for your guild.": 15,
+  "Gain relics or items for a price.": 2,
+  "Retrain a Hero, or strengthen Heroes over time.": 4,
+  "Gain an item. Rarer items Burn your Heroes next combat.": 7,
+  "Get a special item or relic with defensive properties.": 11,
+  "Rank up a Hero at a price, or strengthen one later.": 11,
+  "Get a random epic relic.": 8,
+  "Get relics or items in the future.": 7,
+  "Gain a rare relic for a price.": 3,
+  "Choose from relics of increasing rarity for a price.": 3,
+  "Retrain an upgrade on one of your Heroes.": 1,
+  "Choose from 1 of 3 rare relics.": 1,
+  "Permanently increase a Hero's HP/S by 40.": 1,
+  "Gain Shards in the future, or gain an item for a cost.": 4,
+  "Wait for a common relic, or take a rarer one at a cost.": 4,
+  "Gain special relics and items for your most-played classes.": 3,
+  "Get an S-Rank Hero from one of your most-played classes.": 4,
+  "Choose from 1 of 3 epic items.": 2,
+  "Gamble for increasingly powerful rewards.": 1,
+  "Gain an item.": 1
+ }
+}

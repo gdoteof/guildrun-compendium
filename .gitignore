@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+
+# Extracted game text (Leyline's content) — seeded into D1 at deploy, never committed
+tools/catalog/catalog.json
+tools/catalog/loc_en.json
+venv/
+__pycache__/
