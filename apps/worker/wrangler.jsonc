@@ -4,6 +4,13 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
   "assets": { "directory": "public", "binding": "ASSETS" },
+  // guildrun.gd0t.com is the public name. workers.dev stays ON deliberately:
+  // every companion binary shipped so far (<= v0.3.0) and collect.py hardcode
+  // the workers.dev host as DEFAULT_SERVER, so retiring it would strand them.
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "guildrun.gd0t.com", "custom_domain": true }
+  ],
   "d1_databases": [
     { "binding": "DB", "database_name": "guildrun", "database_id": "57c725a8-5b7b-4e42-bc50-29ea3d2b26b6" }
   ],

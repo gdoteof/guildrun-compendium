@@ -2,7 +2,7 @@
 
 [![release](https://img.shields.io/github/v/release/gdoteof/guildrun-compendium?label=companion&color=2a78d6)](https://github.com/gdoteof/guildrun-compendium/releases/latest)
 [![license](https://img.shields.io/github/license/gdoteof/guildrun-compendium?color=52514e)](LICENSE)
-[![site](https://img.shields.io/website?url=https%3A%2F%2Fguildrun-compendium.laxity-03-hunger3397.workers.dev&label=compendium)](https://guildrun-compendium.laxity-03-hunger3397.workers.dev)
+[![site](https://img.shields.io/website?url=https%3A%2F%2Fguildrun.gd0t.com&label=compendium)](https://guildrun.gd0t.com)
 
 Community stats compendium for [Guildrun](https://store.steampowered.com/app/4425970/) (Leyline).
 Players opt in by dragging their game's log folder onto a web page (or running a small script);
@@ -25,7 +25,7 @@ raw logs (R2, SteamIDs scrubbed at ingest)
             └─ read API + stats site   ← a future companion app consumes this same API
 ```
 
-**Live:** https://guildrun-compendium.laxity-03-hunger3397.workers.dev — drag your log
+**Live:** https://guildrun.gd0t.com — drag your log
 folder onto the home page, or run the script:
 
 ```bash

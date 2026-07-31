@@ -25,7 +25,9 @@ import { CaptureUploader } from "./uploader.js";
 import { CompanionServer } from "./server.js";
 import { VERSION } from "./version.js";
 
-const DEFAULT_SERVER = "https://guildrun-compendium.laxity-03-hunger3397.workers.dev";
+// Binaries <= v0.3.0 shipped with the workers.dev host; that hostname stays
+// live (wrangler.jsonc keeps workers_dev on) so they keep uploading.
+const DEFAULT_SERVER = "https://guildrun.gd0t.com";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
