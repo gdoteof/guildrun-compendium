@@ -82,4 +82,35 @@ describe("LogTailer", () => {
     expect(activeFile).toBe("2026-07-30-game.log");
     expect(got).toHaveLength(1);
   });
+
+  it("tails Player.log with a custom pattern (macOS Unity player log)", async () => {
+    tailer.stop();
+    tailer = new LogTailer(dir, {
+      onLines: (lines) => got.push(...lines),
+      onRotate: (f) => rotations.push(f),
+    }, /^Player\.log$/);
+    writeFileSync(join(dir, "Player-prev.log"), LINE(1)); // previous session — ignored
+    writeFileSync(join(dir, "Player.log"), LINE(2));
+    const { activeFile } = tailer.start();
+    expect(activeFile).toBe("Player.log");
+    expect(got).toHaveLength(1);
+    expect(got[0]).toContain("line 2");
+  });
+
+  it("treats in-place truncation as rotation (Unity relaunch)", async () => {
+    tailer.stop();
+    tailer = new LogTailer(dir, {
+      onLines: (lines) => got.push(...lines),
+      onRotate: (f) => rotations.push(f),
+    }, /^Player\.log$/);
+    writeFileSync(join(dir, "Player.log"), LINE(1) + LINE(2));
+    tailer.start();
+    expect(got).toHaveLength(2);
+    // game relaunch: Unity truncates Player.log and starts fresh
+    writeFileSync(join(dir, "Player.log"), LINE(3));
+    await wait(400);
+    expect(rotations).toEqual(["Player.log"]);
+    expect(got).toHaveLength(3);
+    expect(got[2]).toContain("line 3");
+  });
 });

@@ -7,9 +7,11 @@
  *  - We track a byte offset per file and read ONLY appended bytes with a
  *    positioned read — the file is never re-read, however big it grows.
  *  - Change events are coalesced (150ms) so combat log bursts cost one read.
- *  - Rotation-aware: the active file is always `YYYY-MM-DD-game.log`; a new
- *    active file (new day / restart) starts from offset 0, and a shrink is
- *    treated as truncation.
+ *  - Rotation-aware: the active file matches the platform pattern
+ *    (`YYYY-MM-DD-game.log`, or `Player.log` on macOS); a new active file
+ *    (new day / restart) starts from offset 0, and a shrink is treated as
+ *    rotation too — Unity truncates Player.log in place on every launch,
+ *    which is a new session exactly like a fresh game.log.
  */
 
 import { closeSync, openSync, readSync, fstatSync, watch, watchFile, unwatchFile, existsSync, readdirSync, type FSWatcher } from "node:fs";
@@ -35,6 +37,7 @@ export class LogTailer {
   constructor(
     private logsDir: string,
     private events: TailerEvents,
+    private pattern: RegExp = ACTIVE_RE,
   ) {}
 
   /** Pick the active file, read it from the start (catch-up), then watch. */
@@ -91,7 +94,7 @@ export class LogTailer {
 
   private findActiveFile(): string | null {
     if (!existsSync(this.logsDir)) return null;
-    const candidates = readdirSync(this.logsDir).filter((f) => ACTIVE_RE.test(f)).sort();
+    const candidates = readdirSync(this.logsDir).filter((f) => this.pattern.test(f)).sort();
     return candidates[candidates.length - 1] ?? null;
   }
 
@@ -118,9 +121,11 @@ export class LogTailer {
     try {
       const size = fstatSync(fd).size;
       if (size < this.offset) {
-        // truncated/replaced in place — start over
+        // truncated/replaced in place — a new session (Unity does this to
+        // Player.log on every launch); start over and reset live state
         this.offset = 0;
         this.carry = "";
+        this.events.onRotate?.(this.activeFile);
       }
       if (size === this.offset) return;
       const len = size - this.offset;
