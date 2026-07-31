@@ -24,7 +24,7 @@ macOS support that actually works. Single file, no install, no dependencies.
   deletes at run end — capturing **full shop inventories with prices,
   including offers you rerolled past**, and event outcomes.
 - At run end, uploads your log + captures to the
-  [community compendium](https://guildrun-compendium.laxity-03-hunger3397.workers.dev)
+  [community compendium](https://guildrun.gd0t.com)
   automatically (opt out with `--no-log-upload` / `--no-capture-upload`).
 
 ## Good-citizen contract
