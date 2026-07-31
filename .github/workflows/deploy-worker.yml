@@ -1,0 +1,44 @@
+# Auto-deploy the webapp (worker + static site) on pushes to main.
+#
+# Scope is deliberately the webapp only: companion releases stay local-built
+# (see RELEASING.md — bun cross-compiles cost zero runner minutes). Entity
+# icons are served from R2 at runtime, not bundled into the deploy, so a CI
+# checkout (which has no gitignored game art) deploys the complete site.
+#
+# Needs one repository secret: CLOUDFLARE_API_TOKEN (Workers Scripts: Edit +
+# Workers Assets: Edit — the "Edit Cloudflare Workers" template works).
+name: deploy-worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/worker/**"
+      - "packages/parser/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/deploy-worker.yml"
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4   # version from package.json packageManager
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # the worker embeds the parser — don't ship a deploy its tests would fail
+      - run: pnpm --filter @guildrun/parser test
+      - run: pnpm --filter @guildrun/worker typecheck
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 81cd223371b823f805c79c72b300a7bc
+          workingDirectory: apps/worker
+          command: deploy

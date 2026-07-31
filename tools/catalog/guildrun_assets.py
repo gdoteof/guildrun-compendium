@@ -25,7 +25,11 @@ Two sources, no game code needed:
    stats, the localisation variables that fill {0} placeholders, and the
    sprite references used to export entity icons.
 
-Writes catalog.json (and icon PNGs unless --no-icons).
+Writes catalog.json (and icon PNGs unless --no-icons). Icons are served from
+R2 at runtime, not bundled with the site — after (re)extracting, sync them up:
+
+  curl -X POST <server>/api/admin/icons -H "X-Admin-Token: $TOKEN" \
+       $(for f in icons/*.png; do echo -F "files=@$f"; done)
 
 Usage:  python3 guildrun_assets.py [GAMEDIR] [--locale english(en)]
                  [--no-sheets] [--no-icons] [--icons-out DIR]
