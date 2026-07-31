@@ -129,6 +129,40 @@ app.post("/api/admin/catalog", async (c) => {
   return c.json({ seeded: n });
 });
 
+/** Entity icons, served from R2 (`icons/<Ref>.png`). They are extracted game
+ * art — never committed, never part of the deploy bundle — so CI deploys
+ * can't clobber them; /api/admin/icons re-syncs after a game update. */
+app.get("/icons/:name", async (c) => {
+  const name = c.req.param("name");
+  if (!/^[A-Za-z0-9_-]+\.png$/.test(name)) return c.text("bad icon name", 400);
+  const obj = await c.env.RAW_R2.get(`icons/${name}`);
+  if (!obj) return c.text("not found", 404);
+  return new Response(obj.body, {
+    headers: {
+      "Content-Type": "image/png",
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+});
+
+/** Bulk icon sync: multipart form, each part's filename becomes the R2 key
+ * (icons/<basename>). Idempotent — re-uploading overwrites. */
+app.post("/api/admin/icons", async (c) => {
+  if (!adminOk(c)) return c.json({ error: "unauthorized" }, 403);
+  const form = await c.req.raw.formData();
+  const isFilePart = (f: unknown): f is { name: string; arrayBuffer(): Promise<ArrayBuffer> } =>
+    typeof f === "object" && f !== null && "name" in f && "arrayBuffer" in f;
+  let n = 0;
+  for (const part of form.getAll("files")) {
+    if (!isFilePart(part)) continue;
+    const base = part.name.split("/").pop()!.split("\\").pop()!;
+    if (!/^[A-Za-z0-9_-]+\.png$/.test(base)) continue;
+    await c.env.RAW_R2.put(`icons/${base}`, await part.arrayBuffer());
+    n++;
+  }
+  return c.json({ stored: n });
+});
+
 /** Run-save captures from the companion. Identity comes as a steam_id field
  * (from the save-dir path), hashed server-side exactly like log ingestion. */
 app.post("/api/captures", async (c) => {

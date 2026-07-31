@@ -3,8 +3,8 @@ dist/
 .wrangler/
 .dev.vars
 
-# Extracted game text/art (Leyline's content) — seeded into D1 / deployed as
-# static assets, never committed
+# Extracted game text/art (Leyline's content) — seeded into D1 / synced to R2,
+# never committed and never part of the deploy bundle
 tools/catalog/catalog.json
 tools/catalog/loc_en.json
 tools/catalog/icons/
