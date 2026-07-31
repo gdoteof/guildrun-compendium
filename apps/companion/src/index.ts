@@ -53,8 +53,7 @@ async function main(): Promise<void> {
   if (!paths) {
     console.error(
       "Could not find a Guildrun install.\n" +
-      "Pass it explicitly:  guildrun-companion --game-dir \"<...>/Guildrun Demo/Guildrun_Data\"\n" +
-      "         (macOS)  :  guildrun-companion --game-dir \"~/Applications/Guildrun Demo.app\"",
+      "Pass it explicitly:  guildrun-companion --game-dir \"<...>/Guildrun Demo/Guildrun_Data\"",
     );
     process.exit(1);
   }
@@ -84,7 +83,7 @@ async function main(): Promise<void> {
       notify();
     },
     onError: (e) => console.error(`[tailer] ${e.message} (falling back to lazy polling)`),
-  }, paths.logPattern);
+  });
 
   let save: RunSaveWatcher | null = null;
   let uploader: CaptureUploader | null = null;
