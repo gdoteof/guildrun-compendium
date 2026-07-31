@@ -25,11 +25,26 @@ raw logs (R2, SteamIDs scrubbed at ingest)
             └─ read API + stats site   ← a future companion app consumes this same API
 ```
 
-**Live:** https://guildrun-compendium.laxity-03-hunger3397.workers.dev — drag your
-`Guildrun_Data` folder onto the home page, or run the script:
+**Live:** https://guildrun-compendium.laxity-03-hunger3397.workers.dev — drag your log
+folder onto the home page, or run the script:
 
 ```bash
-python3 tools/collect/collect.py            # autodetects Steam installs (Win/Linux/Proton)
+python3 tools/collect/collect.py            # autodetects Steam installs (Win/macOS/Linux/Proton)
+```
+
+Where the logs are:
+
+| OS | path |
+|---|---|
+| Windows / Linux | `<game dir>/Guildrun_Data/Logs` |
+| macOS | `<game dir>/Guildrun.app/Contents/Logs` (inside the bundle) |
+
+macOS caveat: `~/Library/Logs/Leyline/Guildrun/Player.log` is Unity's console log and
+contains none of the run data — the game's own logs are the dated `*-game*.log` files in
+the bundle. Open that folder from Terminal (Finder won't descend into a bundle):
+
+```bash
+open "$HOME/Library/Application Support/Steam/steamapps/common/Guildrun Demo/Guildrun.app/Contents/Logs"
 ```
 
 ## Workspace

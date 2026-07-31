@@ -18,12 +18,30 @@
   <div class="card">
     <label class="drop" id="drop">
       <input type="file" id="picker" multiple webkitdirectory>
-      <strong>Drop your <code>Guildrun_Data</code> folder here</strong> (or click to pick)<br>
+      <strong>Drop your Guildrun <code>Logs</code> folder here</strong> (or click to pick)<br>
       <span class="small">Only <code>*.log</code> and <code>boot.config</code> are read and uploaded —
-      dragging the whole game folder is fine. Find it via Steam &rarr; right-click Guildrun &rarr;
-      Manage &rarr; Browse local files &rarr; <code>Guildrun_Data/Logs</code>.</span>
+      dragging the whole game folder is fine. Not sure where it is? See below.</span>
     </label>
     <div id="upl-result"></div>
+
+    <details id="where">
+      <summary>Where are my logs?</summary>
+      <p class="small" style="margin-bottom:4px"><strong>Windows / Linux</strong> — Steam &rarr;
+      right-click Guildrun &rarr; Manage &rarr; Browse local files, then
+      <code>Guildrun_Data/Logs</code>. Drop that folder (or the game folder) above.</p>
+
+      <p class="small" style="margin-bottom:4px"><strong>macOS</strong> — the logs are
+      <em>inside</em> the app bundle, at <code>Guildrun.app/Contents/Logs</code>. Finder won't let
+      you open a bundle by double-clicking, so paste this in Terminal to open that folder, then
+      drag it here:</p>
+      <div class="cmdwrap">
+        <pre class="cmd">open "$HOME/Library/Application Support/Steam/steamapps/common/Guildrun Demo/Guildrun.app/Contents/Logs"</pre>
+        <button class="copy">copy</button>
+      </div>
+      <p class="small">Non-Steam install? Same path inside <code>~/Applications/Guildrun
+      Demo.app</code>. Note that <code>~/Library/Logs/Leyline/Guildrun/Player.log</code> is Unity's
+      own console log — it contains none of the run data, so uploading it finds 0 runs.</p>
+    </details>
   </div>
 
   <div class="card">
@@ -100,16 +118,71 @@ document.querySelector("#runs tbody").innerHTML = runs.runs.map((r) => `
 const drop = document.getElementById("drop");
 const picker = document.getElementById("picker");
 const out = document.getElementById("upl-result");
+const WHERE_HINT = `On macOS the game's logs live inside the app bundle
+  (<code>Guildrun.app/Contents/Logs</code>) — see “Where are my logs?” below.`;
+
+const mb = (n) => (n >= 1024 * 1024 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+
+/** POST a FormData with upload-progress callbacks; resolves once the reply lands. */
+function post(url, form, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) onProgress(e.loaded, e.total);
+    });
+    xhr.upload.addEventListener("load", () => onProgress(1, 1));
+    xhr.addEventListener("load", () => {
+      let body;
+      try { body = JSON.parse(xhr.responseText); }
+      catch { return reject(new Error(`Unexpected reply (${xhr.status})`)); }
+      resolve({ res: { ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status }, body });
+    });
+    xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+    xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
+    xhr.send(form);
+  });
+}
 
 async function upload(files) {
   const keep = [...files].filter((f) => f.name.endsWith(".log") || f.name === "boot.config");
-  if (!keep.length) { out.innerHTML = `<p class="small">No .log files in that selection.</p>`; return; }
-  out.innerHTML = `<p class="small">Uploading ${keep.length} file(s)…</p>`;
+  if (!keep.length) {
+    out.innerHTML = `<p class="small">No .log files in that selection. ${WHERE_HINT}</p>`;
+    document.getElementById("where").open = true;
+    return;
+  }
+  // Unity's own console log (~/Library/Logs/Leyline/Guildrun) has no run data
+  if (keep.every((f) => /^Player(-prev)?\.log$/.test(f.name))) {
+    out.innerHTML = `<p>That's Unity's console log (<code>Player.log</code>), which has no run
+      data in it. ${WHERE_HINT}</p>`;
+    document.getElementById("where").open = true;
+    return;
+  }
+  const bytes = keep.reduce((n, f) => n + f.size, 0);
+  out.innerHTML = `
+    <p class="small" id="upl-label">Uploading ${keep.length} file(s), ${mb(bytes)}…</p>
+    <div class="bar"><div class="fill" id="upl-fill"></div></div>`;
+  const fill = document.getElementById("upl-fill");
+  const label = document.getElementById("upl-label");
+
   const form = new FormData();
   for (const f of keep) form.append("files", f, f.name);
   try {
-    const res = await fetch("/api/upload", { method: "POST", body: form });
-    const body = await res.json();
+    // XHR, not fetch: only XHR reports upload progress
+    const { res, body } = await post("/api/upload", form, (sent, total) => {
+      const pct = total ? Math.round((sent / total) * 100) : 0;
+      fill.style.width = `${pct}%`;
+      label.textContent = sent < total
+        ? `Uploading ${keep.length} file(s) — ${mb(sent)} of ${mb(total)} (${pct}%)`
+        : `Uploaded ${mb(total)}; parsing ${keep.length} file(s)…`;
+      if (sent >= total) fill.classList.add("busy");
+    });
+    if (res.ok && !body.duplicate && !body.runs_found) {
+      out.innerHTML = `<p>No runs found in those ${keep.length} file(s) — they don't look like
+        Guildrun's own logs. ${WHERE_HINT}</p>`;
+      document.getElementById("where").open = true;
+      return;
+    }
     out.innerHTML = res.ok
       ? body.duplicate
         ? `<p>Already have this exact upload — nothing new to add.</p>`
