@@ -46,7 +46,12 @@ With Node (from the repo):
 ```bash
 pnpm --filter @guildrun/companion start                # autodetect the game
 pnpm --filter @guildrun/companion start -- --game-dir "<...>/Guildrun Demo/Guildrun_Data"
+pnpm --filter @guildrun/companion start -- --game-dir "<...>/Guildrun Demo"   # macOS: holds Guildrun.app
 ```
+
+`--game-dir` accepts the game folder, `Guildrun_Data`, a macOS `.app` bundle, or the `Logs`
+directory itself. On macOS the logs live at `Guildrun.app/Contents/Logs` — Unity's
+`~/Library/Logs/Leyline/Guildrun/Player.log` is a different file with no run data in it.
 
 Then open http://127.0.0.1:4646/ — a second monitor, or another device on your LAN if you
 pass `--host 0.0.0.0`.

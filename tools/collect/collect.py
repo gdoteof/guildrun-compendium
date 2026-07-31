@@ -3,11 +3,17 @@
 Guildrun Compendium collector — uploads your Guildrun logs to the compendium.
 
 Stdlib only; no dependencies. Finds the game's log folder automatically
-(Windows Steam libraries and Linux/Proton paths), or point it at a folder:
+(Windows Steam libraries, macOS .app bundles, Linux/Proton paths), or point it
+at a folder:
 
     python3 collect.py                       # autodetect
     python3 collect.py "C:/path/to/Guildrun_Data"
+    python3 collect.py "~/Library/Application Support/Steam/steamapps/common/Guildrun Demo"
     python3 collect.py --server https://compendium.example.com
+
+Note for macOS: the log we want is *not* Unity's ~/Library/Logs/Leyline/Guildrun/
+Player.log — the game writes its own structured logs inside the app bundle at
+Guildrun.app/Contents/Logs.
 
 Privacy: your SteamID appears in a few log path lines; the server derives an
 anonymous identity from it (salted HMAC) and scrubs it before storing anything.
@@ -32,6 +38,10 @@ CANDIDATE_ROOTS = [
     "C:/Program Files/Steam/steamapps/common",
     "D:/SteamLibrary/steamapps/common",
     "E:/SteamLibrary/steamapps/common",
+    # macOS Steam + non-Steam .app installs
+    "~/Library/Application Support/Steam/steamapps/common",
+    "~/Applications",
+    "/Applications",
     # Linux native + snap + flatpak
     "~/.steam/steam/steamapps/common",
     "~/.local/share/Steam/steamapps/common",
@@ -40,25 +50,51 @@ CANDIDATE_ROOTS = [
 ]
 
 
-def find_data_dirs():
-    """Yield existing Guildrun*/Guildrun_Data directories."""
+def layouts(game_dir: Path):
+    """(logs_dir, boot_config) candidates for a game folder.
+
+    Windows/Linux: Guildrun_Data/{Logs,boot.config}.
+    macOS: the .app bundle — Contents/Logs and Contents/Resources/Data/boot.config.
+    """
+    yield game_dir / "Guildrun_Data" / "Logs", game_dir / "Guildrun_Data" / "boot.config"
+    bundles = [game_dir] if game_dir.suffix == ".app" else sorted(
+        p for p in _children(game_dir) if p.suffix == ".app"
+    )
+    for app in bundles:
+        yield app / "Contents" / "Logs", app / "Contents" / "Resources" / "Data" / "boot.config"
+
+
+def _children(path: Path):
+    try:
+        return list(path.iterdir())
+    except (PermissionError, FileNotFoundError, NotADirectoryError):
+        return []
+
+
+def resolve(game_dir: Path):
+    """First layout of game_dir that actually has a Logs directory."""
+    for logs, boot in layouts(game_dir):
+        if logs.is_dir():
+            return logs, boot
+    return None
+
+
+def find_installs():
+    """Yield (logs_dir, boot_config) for each detected Guildrun install."""
     for root in CANDIDATE_ROOTS:
         base = Path(os.path.expanduser(root))
         if not base.is_dir():
             continue
-        try:
-            for game in base.iterdir():
-                if game.is_dir() and game.name.lower().startswith("guildrun"):
-                    data = game / "Guildrun_Data"
-                    if (data / "Logs").is_dir():
-                        yield data
-        except PermissionError:
-            continue
+        for game in _children(base):
+            if not game.name.lower().startswith("guildrun"):
+                continue
+            found = resolve(game)
+            if found:
+                yield found
 
 
-def gather_files(data_dir: Path):
-    files = sorted((data_dir / "Logs").glob("*.log"))
-    boot = data_dir / "boot.config"
+def gather_files(logs_dir: Path, boot: Path):
+    files = sorted(logs_dir.glob("*.log"))
     if boot.is_file():
         files.append(boot)
     return files
@@ -99,33 +135,43 @@ def upload(server: str, files):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("path", nargs="?", help="Guildrun_Data directory (autodetected if omitted)")
+    ap.add_argument("path", nargs="?",
+                    help="game folder, Guildrun_Data, .app bundle, or Logs dir "
+                         "(autodetected if omitted)")
     ap.add_argument("--server", default=DEFAULT_SERVER)
     a = ap.parse_args()
 
     if a.path:
-        data_dirs = [Path(a.path)]
-        # accept the Logs dir or the game root too
-        if data_dirs[0].name == "Logs":
-            data_dirs = [data_dirs[0].parent]
-        elif (data_dirs[0] / "Guildrun_Data").is_dir():
-            data_dirs = [data_dirs[0] / "Guildrun_Data"]
+        given = Path(os.path.expanduser(a.path))
+        if given.name == "Logs":
+            # .../Guildrun_Data/Logs or .../Guildrun.app/Contents/Logs
+            boot = given.parent / "boot.config"
+            if not boot.is_file():
+                boot = given.parent / "Resources" / "Data" / "boot.config"
+            installs = [(given, boot)]
+        else:
+            found = resolve(given)
+            if not found:
+                sys.exit(f"No Logs directory under {given}")
+            installs = [found]
     else:
-        data_dirs = list(find_data_dirs())
-        if not data_dirs:
+        installs = list(find_installs())
+        if not installs:
             sys.exit(
                 "Could not find a Guildrun install. Pass the path explicitly:\n"
-                "  python3 collect.py \"<...>/steamapps/common/Guildrun Demo/Guildrun_Data\""
+                "  python3 collect.py \"<...>/steamapps/common/Guildrun Demo\"\n"
+                "macOS note: the logs are inside the bundle "
+                "(Guildrun.app/Contents/Logs), not in ~/Library/Logs."
             )
 
-    for data_dir in data_dirs:
-        files = gather_files(data_dir)
+    for logs_dir, boot in installs:
+        files = gather_files(logs_dir, boot)
         logs = [f for f in files if f.suffix == ".log"]
         if not logs:
-            print(f"{data_dir}: no log files, skipping")
+            print(f"{logs_dir}: no log files, skipping")
             continue
         total = sum(f.stat().st_size for f in files)
-        print(f"{data_dir}\n  uploading {len(logs)} log file(s) "
+        print(f"{logs_dir}\n  uploading {len(logs)} log file(s) "
               f"({total // 1024} KB) to {a.server} ...")
         try:
             result = upload(a.server, files)
