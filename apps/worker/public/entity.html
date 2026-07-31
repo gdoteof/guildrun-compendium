@@ -11,12 +11,64 @@
 <main id="main"><p class="small">Loading…</p></main>
 
 <script type="module">
-import { api, esc, header, tierBadge, winBar, fmtLift, rarityLabel } from "/app.js";
+import { api, esc, header, tierBadge, winBar, fmtLift, rarityLabel,
+         iconImg, fmtMarkup, statChips, loadCatalog, entityLink } from "/app.js";
 document.getElementById("hdr").outerHTML = header("");
 
 const params = new URLSearchParams(location.search);
 const type = params.get("type"), ref = params.get("ref");
 const main = document.getElementById("main");
+
+/* Hero base-stat grid; keys match the extracted sheet stats. */
+const heroStats = (s) => {
+  const rows = [["Max HP"], ["Defense"], ["Attack"], ["Magic"],
+    ["Base Attack Damage", "Base Attack"], ["Attack Speed"], ["Base Attack Speed"],
+    ["Crit"], ["Max Mana"], ["Starting Mana"], ["Mana Regen"],
+    ["Attack Range", "Range"], ["Move Speed"]]
+    .filter(([k]) => s[k] !== undefined && s[k] !== 0);
+  if (!rows.length) return "";
+  return `<div class="tiles">${rows.map(([k, label]) => `
+    <div class="tile"><div class="v">${esc(s[k])}</div><div class="k">${esc(label ?? k)}</div></div>`).join("")}</div>`;
+};
+
+const descBlock = (meta) => {
+  const lines = [];
+  if (Array.isArray(meta.Stats) && meta.Stats.length) {
+    lines.push(`<p>${statChips(meta.Stats)}</p>`);
+  }
+  if (meta.Description) lines.push(`<p>${fmtMarkup(meta.Description, meta.DescriptionValues)}</p>`);
+  if (meta.QuestDescription) {
+    lines.push(`<p><strong>Quest:</strong> ${fmtMarkup(meta.QuestDescription, meta.QuestDescriptionValues)}</p>`);
+  }
+  if (meta.QuestRewardDescription) {
+    lines.push(`<p><strong>Reward:</strong> ${fmtMarkup(meta.QuestRewardDescription, meta.QuestRewardDescriptionValues)}</p>`);
+  }
+  return lines.join("");
+};
+
+/* Hero extras: class/guild/price line plus ability cards from the catalog. */
+async function heroPanel(meta) {
+  const bits = [];
+  if (meta.Classes) bits.push(esc(meta.Classes.join(" / ")));
+  if (meta.Guild) bits.push(`${esc(meta.Guild)} guild`);
+  if (meta.Price) bits.push(`${esc(meta.Price[0])} shards`);
+  if (meta.Tags?.length) bits.push(meta.Tags.map(esc).join(", "));
+  const head = bits.length ? `<p class="small">${bits.join(" · ")}</p>` : "";
+
+  const cat = await loadCatalog();
+  const abilities = [["ActiveAbility", "active_ability", "Active ability"],
+    ["PassiveAbility", "passive_ability", "Passive"]]
+    .map(([key, etype, label]) => {
+      const aref = meta[key];
+      const a = aref && cat?.[etype]?.[aref];
+      if (!a) return "";
+      return `<div class="card" style="margin:0.6rem 0">
+        <strong>${label}: ${iconImg(aref, 22)}${esc(a.name)}</strong>
+        ${a.meta?.Description ? `<div>${fmtMarkup(a.meta.Description, a.meta.DescriptionValues)}</div>` : ""}
+      </div>`;
+    }).join("");
+  return head + abilities;
+}
 
 try {
   const e = await api(`/entity/${encodeURIComponent(type)}/${encodeURIComponent(ref)}`);
@@ -24,9 +76,13 @@ try {
   const all = e.contexts.find((c) => c.ctx_version === "all" && c.ctx_difficulty === 0 && c.ctx_floor_band === "all");
   const meta = e.meta ?? {};
   main.innerHTML = `
-    <h2 style="font-size:1.3rem;margin-bottom:2px">${esc(e.name)}
+    <h2 style="font-size:1.3rem;margin-bottom:2px;display:flex;align-items:center;gap:8px">
+      ${iconImg(ref, 40)}${esc(e.name)}
       ${all ? tierBadge(all.tier) : ""} ${rarityLabel(e.rarity)}</h2>
-    <p class="small">${esc(ref)}${meta.Description ? " — " + esc(String(meta.Description)) : ""}</p>
+    <p class="small">${esc(ref)}${meta.Pools?.length ? " · " + meta.Pools.map(esc).join(", ") : ""}</p>
+    ${descBlock(meta)}
+    <div id="hero-extra"></div>
+    ${type === "hero" && meta.Stats ? heroStats(meta.Stats) : ""}
     ${all ? `<div class="tiles">
       <div class="tile"><div class="v">${all.n_battles}</div><div class="k">battles fielded</div></div>
       <div class="tile"><div class="v">${all.n_battles ? Math.round((all.battle_wins / all.n_battles) * 100) + "%" : "–"}</div><div class="k">battle win rate</div></div>
@@ -55,6 +111,9 @@ try {
         </tr>`).join("")}
       </tbody></table>
     </div>`;
+  if (type === "hero") {
+    document.getElementById("hero-extra").innerHTML = await heroPanel(meta);
+  }
 } catch {
   main.innerHTML = `<p>Not found.</p>`;
 }

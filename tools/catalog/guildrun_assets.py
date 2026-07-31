@@ -19,9 +19,16 @@ Two sources, no game code needed:
    which yields rarity buckets ("Common Items" / "Rare Items" / "Epic Items")
    and the stat-category pools.
 
-Writes catalog.json.
+3. Full sheet data (guildrun_sheets.py, needs TypeTreeGeneratorAPI)
+   Typetrees regenerated from GameAssembly.dll + global-metadata.dat give
+   byte-exact reads of every SheetHolder: item stat modifications, hero base
+   stats, the localisation variables that fill {0} placeholders, and the
+   sprite references used to export entity icons.
+
+Writes catalog.json (and icon PNGs unless --no-icons).
 
 Usage:  python3 guildrun_assets.py [GAMEDIR] [--locale english(en)]
+                 [--no-sheets] [--no-icons] [--icons-out DIR]
 """
 
 import json
@@ -198,6 +205,26 @@ def main():
         "relic_pools": relic_pools,
         "ui_strings": {k: v for k, v in strings.items() if k.startswith("UI.")},
     }
+    if "--no-sheets" not in sys.argv:
+        import guildrun_sheets
+        names = {table: {num: fields["Name"] for num, fields in ents.items()
+                         if "Name" in fields}
+                 for table, ents in catalog.items()}
+        reader = guildrun_sheets.SheetReader(game)
+        icon_jobs = guildrun_sheets.enrich_catalog(out, reader, names)
+        enriched = sum(1 for group in ("items", "relics", "heroes")
+                       for v in out[group].values()
+                       if "Stats" in v or "DescriptionValues" in v)
+        print(f"sheets: enriched {enriched} entries; {len(icon_jobs)} icons referenced",
+              file=sys.stderr)
+        if "--no-icons" not in sys.argv:
+            icons_out = "icons"
+            if "--icons-out" in sys.argv:
+                icons_out = sys.argv[sys.argv.index("--icons-out") + 1]
+            written, failed = guildrun_sheets.export_icons(reader, icon_jobs, icons_out)
+            print(f"icons: {written} written, {failed} failed -> {icons_out}/",
+                  file=sys.stderr)
+
     with open("catalog.json", "w") as fh:
         json.dump(out, fh, indent=1, ensure_ascii=False)
 

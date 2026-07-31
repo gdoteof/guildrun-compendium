@@ -11,12 +11,26 @@
 <main id="main"><p class="small">Loading…</p></main>
 
 <script type="module">
-import { api, esc, header } from "/app.js";
+import { api, esc, header, entityLink, loadCatalog } from "/app.js";
 document.getElementById("hdr").outerHTML = header("");
 
 const id = new URLSearchParams(location.search).get("id");
 const main = document.getElementById("main");
 const RANKS = { 1: "C", 2: "B", 3: "A", 4: "S" };
+
+/* sales_json rows carry names only; map back to refs via the catalog so they
+   get links + tooltips like everything else. */
+const nameToRef = new Map();
+const cat = await loadCatalog();
+for (const t of ["item", "relic", "hero"]) {
+  for (const [ref, e] of Object.entries(cat?.[t] ?? {})) {
+    if (!nameToRef.has(e.name)) nameToRef.set(e.name, [t, ref]);
+  }
+}
+const saleName = (name) => {
+  const hit = nameToRef.get(name);
+  return hit ? entityLink(hit[0], hit[1], name) : esc(name);
+};
 
 const stageLabel = (b) => {
   if (b.stage_kind === "campaign") return `floor ${b.floor}`;
@@ -50,6 +64,8 @@ try {
     relic_gain: "relic", relic_lost: "relic expired",
   };
 
+  const kindType = (k) => (k === "hero" ? "hero" : k === "relic" ? "relic" : "item");
+
   const phaseHtml = (ordinal) => {
     const acqs = acqByPhase.get(ordinal) ?? [];
     const shops = shopByPhase.get(ordinal) ?? [];
@@ -62,16 +78,17 @@ try {
           (s.net_shards != null ? `, net ${s.net_shards > 0 ? "-" : "+"}${Math.abs(s.net_shards)} shards` : ""));
       }
       const sales = JSON.parse(s.sales_json ?? "[]");
-      if (sales.length) parts.push(`on sale: ${sales.map((x) => esc(x.name)).join(", ")}`);
+      if (sales.length) parts.push(`on sale: ${sales.map((x) => saleName(x.name)).join(", ")}`);
     }
     for (const a of acqs) {
       const label = ACQ_LABEL[a.kind] ?? a.kind;
-      let txt = `${label}: ${esc(a.resolved.name)}`;
+      const atype = a.kind.startsWith("item") ? "item" : a.kind.startsWith("relic") ? "relic" : "hero";
+      let txt = `${label}: ${entityLink(atype, a.resolved.ref, a.resolved.name)}`;
       if (a.kind === "rank_up") {
         const det = JSON.parse(a.detail ?? "{}");
         txt += ` ${RANKS[det.from] ?? det.from} → ${RANKS[det.to] ?? det.to}`;
       }
-      if (a.hero) txt += ` → ${esc(a.hero.name)}`;
+      if (a.hero) txt += ` → ${entityLink("hero", a.hero.ref, a.hero.name)}`;
       parts.push(txt);
     }
     return `<div class="phase">${parts.map((p) => `· ${p}`).join("<br>")}</div>`;
@@ -88,7 +105,7 @@ try {
         <span class="small">(from run-save captures — includes rerolled-past offers)</span></h3>
       ${d.shop_offers_seen.map((s) => `<div class="meta" style="margin:4px 0">
         <strong>floor ${s.floor ?? "?"}</strong> ·
-        ${s.offers.map((o) => `${esc(o.name)}${o.rank ? ` [${RANKS[o.rank] ?? o.rank}]` : ""}
+        ${s.offers.map((o) => `${entityLink(kindType(o.kind), o.ref, o.name)}${o.rank ? ` [${RANKS[o.rank] ?? o.rank}]` : ""}
           <span class="small">${o.on_sale ? `<s>${o.base_cost}</s> ${o.price}` : o.price}s</span>`).join(" · ")}
       </div>`).join("")}
     </div>` : ""}
@@ -104,10 +121,10 @@ try {
           </div>
           <div class="meta">
             ${b.party.filter((p) => !p.reserve).map((p) =>
-              `${esc(p.name)} <strong>${RANKS[p.rank] ?? "?"}</strong>${p.items.length ? ` (${p.items.map((i) => esc(i.name)).join(", ")})` : ""}`).join(" · ")}
+              `${entityLink("hero", p.ref, p.name)} <strong>${RANKS[p.rank] ?? "?"}</strong>${p.items.length ? ` (${p.items.map((i) => entityLink("item", i.ref, i.name)).join(", ")})` : ""}`).join(" · ")}
           </div>
-          ${b.relics.length ? `<div class="meta">relics (${b.relics.length}): ${b.relics.map((x) => esc(x.name)).join(", ")}</div>` : ""}
-          ${b.deaths.filter((x) => x.is_hero).length ? `<div class="meta" style="color:var(--bad)">lost: ${b.deaths.filter((x) => x.is_hero).map((x) => esc(x.name)).join(", ")}</div>` : ""}
+          ${b.relics.length ? `<div class="meta">relics (${b.relics.length}): ${b.relics.map((x) => entityLink("relic", x.ref, x.name)).join(", ")}</div>` : ""}
+          ${b.deaths.filter((x) => x.is_hero).length ? `<div class="meta" style="color:var(--bad)">lost: ${b.deaths.filter((x) => x.is_hero).map((x) => (x.ref ? entityLink("hero", x.ref, x.name) : esc(x.name))).join(", ")}</div>` : ""}
         </div>`).join("")}
     </div>`;
 } catch {

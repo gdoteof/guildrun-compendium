@@ -20,6 +20,11 @@
   --tier-S: #104281; --tier-A: #1c5cab; --tier-B: #2a78d6; --tier-C: #5598e7; --tier-D: #86b6ef;
   --tier-ink-S: #fff; --tier-ink-A: #fff; --tier-ink-B: #fff; --tier-ink-C: #fff; --tier-ink-D: #0b0b0b;
   --rar-Epic: #8a3612; --rar-Rare: #d95926; --rar-Common: #f0916b;
+  /* game-keyword tints (description markup); AA-checked on both surfaces */
+  --kw-attack: #b3401f; --kw-magic: #6a3fc4; --kw-defense: #3f6480;
+  --kw-crit: #a3372f; --kw-heal: #1e7a34; --kw-mana: #1f6ab3;
+  --kw-burn: #c2510e; --kw-frost: #1a7ba6; --kw-poison: #4a8014;
+  --kw-rush: #b3701f; --kw-stall: #7a5ab0; --kw-generic: #52514e;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
@@ -39,6 +44,10 @@
     --tier-S: #b7d3f6; --tier-A: #86b6ef; --tier-B: #5598e7; --tier-C: #256abf; --tier-D: #184f95;
     --tier-ink-S: #0b0b0b; --tier-ink-A: #0b0b0b; --tier-ink-B: #0b0b0b; --tier-ink-C: #fff; --tier-ink-D: #fff;
     --rar-Epic: #f7b697; --rar-Rare: #eb6834; --rar-Common: #a8431a;
+    --kw-attack: #f0946f; --kw-magic: #bfa1f2; --kw-defense: #94bdd9;
+    --kw-crit: #f09a90; --kw-heal: #7fce8e; --kw-mana: #85b9ec;
+    --kw-burn: #f0a05f; --kw-frost: #74c4e8; --kw-poison: #a9d06a;
+    --kw-rush: #ecb377; --kw-stall: #c3aae8; --kw-generic: #c3c2b7;
   }
 }
 
@@ -139,3 +148,51 @@ pre.result { background: var(--surface); border: 1px solid var(--border); border
 .timeline .phase { color: var(--ink-2); font-size: 0.88rem; margin: 2px 0 2px 22px; }
 .timeline .hdr { font-weight: 600; }
 .timeline .meta { color: var(--muted); font-size: 0.82rem; }
+/* entity links inside dense replay rows stay quiet until hovered */
+.timeline a[data-tip], .phase a[data-tip] { color: inherit; text-decoration: underline dotted; }
+.timeline a[data-tip]:hover, .phase a[data-tip]:hover { color: var(--accent); }
+
+/* ---- entity icons (extracted from the game build) ---- */
+.eicon { vertical-align: -4px; border-radius: 4px; margin-right: 4px; }
+
+/* ---- game-description keyword markup ---- */
+.kw { font-weight: 600; color: var(--kw-generic); }
+.kw-attack, .kw-attackdamage { color: var(--kw-attack); }
+.kw-magic, .kw-mage, .kw-statcalcdamage { color: var(--kw-magic); }
+.kw-defense, .kw-tank, .kw-shield { color: var(--kw-defense); }
+.kw-crit, .kw-warrior { color: var(--kw-crit); }
+.kw-health, .kw-hps, .kw-heal, .kw-statcalchps { color: var(--kw-heal); }
+.kw-mana, .kw-manaregen, .kw-startingmana, .kw-mystic { color: var(--kw-mana); }
+.kw-burn { color: var(--kw-burn); }
+.kw-frost { color: var(--kw-frost); }
+.kw-poison { color: var(--kw-poison); }
+.kw-rush, .kw-attackspeed { color: var(--kw-rush); }
+.kw-stall, .kw-stun { color: var(--kw-stall); }
+.kw-bold { color: inherit; }
+
+/* ---- item stat chips ---- */
+.statchip {
+  display: inline-block; padding: 0 7px; border-radius: 5px; margin: 1px 2px 1px 0;
+  background: color-mix(in oklab, var(--accent) 9%, transparent);
+  font-size: 0.85rem; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+
+/* ---- hover tooltip ---- */
+.etip {
+  position: fixed; z-index: 50; max-width: 330px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  padding: 10px 12px; font-size: 0.86rem; line-height: 1.45;
+  pointer-events: none;
+}
+.etip .tip-hd { display: flex; align-items: center; gap: 8px; }
+.etip .tip-hd .eicon { width: 34px; height: 34px; margin: 0; }
+.etip .tip-name { font-weight: 650; }
+.etip .tip-sub { color: var(--muted); font-size: 0.8rem; margin-top: 3px; }
+.etip .tip-line { margin-top: 6px; }
+.etip .tip-stats {
+  display: grid; grid-template-columns: auto auto auto auto; gap: 1px 10px;
+  margin-top: 6px; font-size: 0.82rem;
+}
+.etip .tip-stats span { color: var(--muted); }
+.etip .tip-stats strong { text-align: right; font-variant-numeric: tabular-nums; }

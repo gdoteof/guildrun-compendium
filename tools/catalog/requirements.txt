@@ -1,0 +1,3 @@
+# guildrun_assets.py + guildrun_sheets.py
+UnityPy>=1.25            # asset parsing + sprite export
+TypeTreeGeneratorAPI>=0.0.10  # regenerates typetrees from the IL2CPP build

@@ -3,9 +3,12 @@ dist/
 .wrangler/
 .dev.vars
 
-# Extracted game text (Leyline's content) — seeded into D1 at deploy, never committed
+# Extracted game text/art (Leyline's content) — seeded into D1 / deployed as
+# static assets, never committed
 tools/catalog/catalog.json
 tools/catalog/loc_en.json
+tools/catalog/icons/
+apps/worker/public/icons/
 venv/
 __pycache__/
 .secrets.production

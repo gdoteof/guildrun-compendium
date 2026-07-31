@@ -269,12 +269,15 @@ api.get("/runs/:id", async (c) => {
 
   const names = new Map(catalog.results.map((r) => [`${r.entity_type}:${r.ref}`, r.name]));
   const rarities = new Map(catalog.results.map((r) => [`${r.entity_type}:${r.ref}`, r.rarity]));
-  const resolve = (t: string, ref: string): { ref: string; name: string; rarity: string | null } => ({
-    ref,
+  const resolve = (t: string, ref: string): { ref: string; name: string; rarity: string | null } => {
     // item refs appear log-native as tem_N; the catalog stores Item_N
-    name: names.get(`${t}:${ref}`) ?? names.get(`${t}:${ref.replace(/^tem_/, "Item_")}`) ?? ref,
-    rarity: rarities.get(`${t}:${ref}`) ?? rarities.get(`${t}:${ref.replace(/^tem_/, "Item_")}`) ?? null,
-  });
+    const norm = names.has(`${t}:${ref}`) ? ref : ref.replace(/^tem_/, "Item_");
+    return {
+      ref: norm,
+      name: names.get(`${t}:${norm}`) ?? norm,
+      rarity: rarities.get(`${t}:${norm}`) ?? null,
+    };
+  };
 
   const byBattle = <T extends { battle_id: number }>(rows: T[]): Map<number, T[]> => {
     const m = new Map<number, T[]>();
@@ -311,6 +314,7 @@ api.get("/runs/:id", async (c) => {
       relics: (relicsBy.get(bid) ?? []).map((r) => resolve("relic", r.relic_ref)),
       deaths: (deathsBy.get(bid) ?? []).map((d) => ({
         name: d.name, is_hero: d.hero_ref !== null,
+        ...(d.hero_ref ? { ref: d.hero_ref } : {}),
       })),
     };
   });

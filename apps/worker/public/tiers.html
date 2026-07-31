@@ -46,7 +46,7 @@
 </main>
 
 <script type="module">
-import { api, esc, header, tierBadge, rarityLabel, winBar, fmtLift, entityLink } from "/app.js";
+import { api, esc, header, tierBadge, rarityLabel, winBar, fmtLift, entityLink, iconImg } from "/app.js";
 document.getElementById("hdr").outerHTML = header("Tier lists");
 
 const state = { type: "hero", difficulty: "0", band: "all" };
@@ -58,7 +58,7 @@ async function render() {
   document.getElementById("rows").innerHTML = rows.map((e) => `
     <tr>
       <td>${tierBadge(e.tier)}</td>
-      <td>${entityLink(state.type, e.ref, e.name ?? e.ref)}${e.n_runs && e.n_runs < 5 ? ' <span class="small" title="fewer than 5 runs">low n</span>' : ""}</td>
+      <td>${iconImg(e.ref, 20)}${entityLink(state.type, e.ref, e.name ?? e.ref)}${e.n_runs && e.n_runs < 5 ? ' <span class="small" title="fewer than 5 runs">low n</span>' : ""}</td>
       <td>${rarityLabel(e.rarity)}</td>
       <td class="num">${e.n_battles}</td>
       <td>${winBar(e.battle_wins, e.n_battles)}</td>

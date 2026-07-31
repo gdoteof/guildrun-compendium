@@ -101,16 +101,15 @@ app.post("/api/admin/aggregate", async (c) => {
 /** Seed the content catalog (output of tools/catalog/guildrun_assets.py). */
 app.post("/api/admin/catalog", async (c) => {
   if (!adminOk(c)) return c.json({ error: "unauthorized" }, 403);
-  const body = (await c.req.json()) as {
-    items?: Record<string, { Name?: string; Rarity?: string; [k: string]: unknown }>;
-    relics?: Record<string, { Name?: string; Rarity?: string; [k: string]: unknown }>;
-    heroes?: Record<string, { Name?: string; [k: string]: unknown }>;
-    enemies?: Record<string, { Name?: string; [k: string]: unknown }>;
-    hero_classes?: Record<string, { Name?: string; [k: string]: unknown }>;
-  };
-  const groups: [string, Record<string, { Name?: string; Rarity?: string }> | undefined][] = [
+  type Entries = Record<string, { Name?: string; Rarity?: string; [k: string]: unknown }>;
+  const body = (await c.req.json()) as Record<string, Entries | undefined>;
+  const groups: [string, Entries | undefined][] = [
     ["item", body.items], ["relic", body.relics], ["hero", body.heroes],
     ["enemy", body.enemies], ["hero_class", body.hero_classes],
+    ["active_ability", body.active_abilities],
+    ["passive_ability", body.passive_abilities],
+    ["rank_modifier", body.rank_modifiers],
+    ["hero_specialization", body.hero_specializations],
   ];
   const stmts = [];
   let n = 0;
