@@ -1,6 +1,19 @@
-# guildrun-companion v0.2.0
+# guildrun-companion v0.3.0
 
-First public binary release. Single file, no install, no dependencies.
+macOS support that actually works. Single file, no install, no dependencies.
+
+## New in 0.3.0
+
+- **macOS: finds the real logs.** The game writes its structured logs *inside
+  the app bundle* at `Guildrun.app/Contents/Logs` — not `Guildrun_Data/Logs`,
+  and not Unity's `~/Library/Logs/Leyline/Guildrun/Player.log`, which contains
+  no run data. The companion now resolves .app layouts, accepts a `.app` (or
+  its Logs dir) for `--game-dir`, scans `~/Applications` and `/Applications`
+  for non-Steam installs, and finds the macOS save dir — live overlay,
+  run-save captures, and run-end uploads all work on Mac. (#1, #2)
+- **Same-day restarts no longer bleed state.** NLog truncates the active log
+  file in place when the game restarts within the same day; the tailer now
+  treats that as a session rotation and resets the live view.
 
 ## What it does
 

@@ -118,9 +118,12 @@ export class LogTailer {
     try {
       const size = fstatSync(fd).size;
       if (size < this.offset) {
-        // truncated/replaced in place — start over
+        // truncated/replaced in place — NLog does this to the active file on a
+        // same-day game restart (yesterday's content moves to .N.log). That's
+        // a new session: start over AND reset live state via onRotate.
         this.offset = 0;
         this.carry = "";
+        this.events.onRotate?.(this.activeFile);
       }
       if (size === this.offset) return;
       const len = size - this.offset;

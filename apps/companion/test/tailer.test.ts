@@ -82,4 +82,16 @@ describe("LogTailer", () => {
     expect(activeFile).toBe("2026-07-30-game.log");
     expect(got).toHaveLength(1);
   });
+
+  it("treats in-place truncation as rotation (same-day game restart)", async () => {
+    writeFileSync(join(dir, "2026-07-30-game.log"), LINE(1) + LINE(2));
+    tailer.start();
+    expect(got).toHaveLength(2);
+    // restart: NLog archives the old content and rewrites the active file
+    writeFileSync(join(dir, "2026-07-30-game.log"), LINE(3));
+    await wait(400);
+    expect(rotations).toEqual(["2026-07-30-game.log"]);
+    expect(got).toHaveLength(3);
+    expect(got[2]).toContain("line 3");
+  });
 });
