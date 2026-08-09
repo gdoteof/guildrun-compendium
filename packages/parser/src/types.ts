@@ -46,6 +46,10 @@ export interface HeroDto {
   HeroClasses?: { Id: string }[];
   EquippedItems?: ({ Id?: { Guid?: string }; ItemRef?: string } | null)[];
   EquippedItemLimit?: number;
+  /** permanent stat grants accumulated this run (append-only), e.g. Niklas' belly */
+  StatModifications?: { Type?: number; Value?: string }[];
+  /** per-hero counters the game keeps for its own data-tracking descriptions */
+  PermanentCustomData?: Record<string, string>;
   [k: string]: unknown;
 }
 
