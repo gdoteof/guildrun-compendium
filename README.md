@@ -56,6 +56,7 @@ open "$HOME/Library/Application Support/Steam/steamapps/common/Guildrun Demo/Gui
 | `apps/worker` | Cloudflare Worker: upload API, parsing, aggregation cron, read API, site hosting. |
 | `apps/companion` | Live companion: tails the game log, localhost UI with context-aware tier badges, and Niklas' Belly (what he ate, what it gave him) as a pop-out overlay over the game. See its README for the good-citizen resource contract. |
 | `apps/overlay-macos` | Optional macOS HUD: an AppKit window around the companion's overlay page, so it floats over the game even in fullscreen. Not in the release yet (needs notarization). |
+| `apps/overlay-linux` | The same HUD on Linux: a GTK/WebKitGTK window around the same page, X11 so it works under both X11 and Wayland sessions. Built from source (`./build.sh`), not in the release. |
 | `apps/web` | Stats site (tier lists, entity pages, run replays, drag-and-drop upload). |
 | `tools/collect` | Single-file stdlib-Python uploader for players who prefer a script. |
 | `tools/catalog` | Content-catalog extractor (run by us per game version) + the Python reference parser. |

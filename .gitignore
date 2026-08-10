@@ -2,6 +2,8 @@ node_modules/
 dist/
 # SwiftPM build products (apps/overlay-macos)
 .build/
+# gcc output (apps/overlay-linux)
+apps/overlay-linux/build/
 .wrangler/
 .dev.vars
 

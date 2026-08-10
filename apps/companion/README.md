@@ -150,13 +150,21 @@ Picture-in-Picture window: no native code, no extra process, and the floating pa
 the same live DOM node moved across, so it rides the one existing SSE stream. Chrome/Edge
 (116+) have the API; Firefox and Safari fall back to a plain popup.
 
-Its one limit is the OS's, not the page's: always-on-top there means *within a Space*, so
-it can't follow a game that's in **macOS fullscreen**. Windowed or borderless is fine.
+Its limits are the OS's, not the page's. Always-on-top means *within a Space*, so it
+can't follow a game into **macOS fullscreen**; windowed or borderless is fine. On
+**Wayland** it's weaker still — clients simply may not ask to stay on top, and GNOME has
+no `wlr-layer-shell` to ask through instead.
 
-**As a real HUD** — [`apps/overlay-macos`](../overlay-macos) is a ~300-line AppKit window
-around a `WKWebView` pointed at this same `/belly?overlay=1`. No panel, no chrome, drag it
-anywhere, and it follows the game into fullscreen. Still no injection and no game files
-touched.
+**As a real HUD** — a thin native window around this same `/belly?overlay=1`. No panel,
+no chrome, drag it anywhere. Still no injection and no game files touched:
+
+| | |
+|---|---|
+| [`apps/overlay-macos`](../overlay-macos) | ~300 lines of AppKit around a `WKWebView`. Follows the game into fullscreen. |
+| [`apps/overlay-linux`](../overlay-linux) | ~350 lines of GTK around a `WebKitGTK` view. Runs as an X11 client, so it works in **both X11 and Wayland sessions** (through XWayland, where the game already is). Tray icon for the menu. |
+
+Both are built from source and are outside `tools/release.sh`; see their READMEs.
+Neither contains a second copy of the belly logic — they are windows.
 
 `/belly?overlay=1` is also just the compact skin, for a second monitor or a tablet on the
 LAN (`--host 0.0.0.0`).

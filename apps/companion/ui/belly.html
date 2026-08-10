@@ -62,6 +62,13 @@ body.overlay .amp{color:#79c0ff}
 body.overlay.scrim{background:rgba(0,0,0,.5);border-radius:10px}
 body.overlay h1{font-size:.95rem}
 body.overlay .hide-overlay{display:none}
+/* The dot already says live/reconnecting, and a HUD has no room for a word that
+   repeats it. Hiding it also keeps the one piece of text on this page that is
+   edited IN PLACE off the overlay: WebKitGTK repaints a changed text node
+   without clearing under it when the background is transparent, so "connecting"
+   -> "live" renders as "livenecting". Everything else here is rebuilt through
+   innerHTML, which repaints cleanly — keep it that way. */
+body.overlay #status-text{display:none}
 body.overlay .tiles{gap:5px}
 body.overlay .tile{min-width:0;padding:2px 7px}
 body.overlay .tile b{font-size:.95rem}
@@ -82,7 +89,7 @@ body.overlay td:nth-child(4){grid-column:1/-1}
 <div id="panel">
   <div class="head">
     <h1>Niklas' Belly</h1>
-    <span class="small" id="status"><span class="dot"></span>connecting</span>
+    <span class="small" id="status"><span class="dot"></span><span id="status-text">connecting</span></span>
     <span style="flex:1"></span>
     <button id="pop" class="hide-overlay" title="Float this panel on top of the game">Pop out overlay</button>
   </div>
@@ -172,12 +179,12 @@ function render(s) {
 function connect() {
   const es = new EventSource("/events");
   const dot = document.querySelector("#status .dot");
-  const label = document.getElementById("status");
-  es.onopen = () => { dot.classList.add("ok"); label.lastChild.textContent = "live"; };
+  const label = document.getElementById("status-text");
+  es.onopen = () => { dot.classList.add("ok"); label.textContent = "live"; };
   es.onmessage = (e) => render(JSON.parse(e.data));
   es.onerror = () => {
     dot.classList.remove("ok");
-    label.lastChild.textContent = "reconnecting";
+    label.textContent = "reconnecting";
     // EventSource retries on its own; nothing else to do
   };
 }
