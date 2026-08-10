@@ -23,8 +23,12 @@ echo "    parser golden + companion tests + typecheck: OK"
 
 echo "==> building all targets"
 rm -rf "$DIST"
+# --with-icons, like the build:* scripts: the stat glyphs are extracted game art
+# that git never sees, so they are baked in here or not at all. gen:ui warns and
+# carries on when they're missing, which is why this is easy to leave off — the
+# release then silently ships a Belly overlay with no glyphs.
 (cd apps/companion \
-  && pnpm gen:ui >/dev/null \
+  && pnpm gen:ui --with-icons \
   && bun build --compile --target=bun-linux-x64   src/index.ts --outfile dist/guildrun-companion-linux-x64 \
   && bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile dist/guildrun-companion-macos-arm64 \
   && bun build --compile --target=bun-darwin-x64  src/index.ts --outfile dist/guildrun-companion-macos-x64 \
