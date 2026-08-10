@@ -27,12 +27,23 @@ rm -rf "$DIST"
 # that git never sees, so they are baked in here or not at all. gen:ui warns and
 # carries on when they're missing, which is why this is easy to leave off — the
 # release then silently ships a Belly overlay with no glyphs.
+#
+# src/ui-embedded.ts IS tracked, so --with-icons leaves ~45KB of game art in a
+# committed file. Restore it as soon as the binaries are out, or the next
+# `git commit -a` puts the art in the repo — exactly what .gitignore is keeping
+# out. Trapped so a failed build cleans up too.
+EMBEDDED="apps/companion/src/ui-embedded.ts"
+restore_embedded() { git checkout -- "$EMBEDDED" 2>/dev/null || true; }
+trap restore_embedded EXIT
+
 (cd apps/companion \
   && pnpm gen:ui --with-icons \
   && bun build --compile --target=bun-linux-x64   src/index.ts --outfile dist/guildrun-companion-linux-x64 \
   && bun build --compile --target=bun-darwin-arm64 src/index.ts --outfile dist/guildrun-companion-macos-arm64 \
   && bun build --compile --target=bun-darwin-x64  src/index.ts --outfile dist/guildrun-companion-macos-x64 \
   && bun build --compile --target=bun-windows-x64 src/index.ts --outfile dist/guildrun-companion-windows-x64.exe)
+
+restore_embedded
 
 (cd "$DIST" && sha256sum guildrun-companion-* > SHA256SUMS)
 ls -la "$DIST"
