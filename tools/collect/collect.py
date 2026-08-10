@@ -30,7 +30,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-DEFAULT_SERVER = "https://guildrun-compendium.laxity-03-hunger3397.workers.dev"
+DEFAULT_SERVER = "https://guildrun.gd0t.com"
 
 CANDIDATE_ROOTS = [
     # Windows Steam default + common library layouts
