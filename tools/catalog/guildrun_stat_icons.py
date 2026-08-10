@@ -10,7 +10,12 @@ overlay can show the same icons the game does, rather than approximations.
 Unlike the entity icons (which are served from the site), these have to be
 EMBEDDED: the companion ships as one self-contained binary with no files on
 disk. So this writes a CSS file of data: URIs, keyed by the TargetStat enum id
-that the logs use, which is committed and embedded by `pnpm gen:ui`.
+that the logs use.
+
+Being extracted game art, that file is NOT committed (see .gitignore) — the
+build scripts bake it in with `pnpm gen:ui --with-icons`, on a machine that has
+run this. Plain `pnpm gen:ui` leaves it out, so the committed ui-embedded.ts
+stays art-free.
 
 Run per game version, from anywhere:
 

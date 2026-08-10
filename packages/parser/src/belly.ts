@@ -194,6 +194,22 @@ function toStats(m: Map<number, number>): BellyStat[] {
 /** Name -> enum id, so catalog stats can be matched against logged StatModifications. */
 const STAT_IDS = new Map(Object.entries(STAT_NAMES).map(([id, name]) => [name, Number(id)]));
 
+/**
+ * Catalog stat name -> TargetStat id, or -1 when it names nothing placeable.
+ *
+ * The catalog prints "Stat<n>" for any id it has no name for (STAT_NAMES in
+ * tools/catalog/guildrun_sheets.py), so read that back rather than giving up on
+ * it: an unresolved id matches no logged StatModifications entry, which would
+ * credit the item's PRINTED value here and leave the real logged gain to fall
+ * through into `other` — the same gain counted twice, once under "Stat -1".
+ */
+function statId(name: string): number {
+  const known = STAT_IDS.get(name);
+  if (known !== undefined) return known;
+  const m = /^Stat ?(\d+)$/.exec(name);
+  return m ? Number(m[1]) : -1;
+}
+
 /** How far a logged value is from being a whole multiple of the item's base. */
 function multipleError(base: number, logged: number): number {
   if (base === 0) return Infinity;
@@ -224,7 +240,7 @@ function multipleError(base: number, logged: number): number {
  */
 function claimForItem(stats: ItemStat[], unclaimed: StatMod[]): BellyStat[] {
   const gain: BellyStat[] = stats.map(({ stat, value }) => ({
-    stat: STAT_IDS.get(stat) ?? -1, name: stat, value,
+    stat: statId(stat), name: stat, value,
   }));
   const pending: number[] = [];
 

@@ -165,6 +165,27 @@ describe("Niklas' Belly", () => {
     expect(belly.other).toEqual([{ stat: 9, name: "Attack Speed", value: 25 }]);
   });
 
+  it("places a stat the catalog has no name for", () => {
+    // The catalog prints "Stat<n>" for any TargetStat its own table doesn't
+    // name (a new stat in a game patch, before we've mapped it). Left
+    // unresolved it matches nothing in the log, so the item's PRINTED value
+    // would be credited here while the real logged gain fell through into
+    // `other` — one grant, reported twice.
+    const belly = trackBelly(
+      niklasRun([
+        { items: ["Item_999"], consumed: 0, mods: [] },
+        { items: [], consumed: 1, mods: [[42, 30]] },
+      ]),
+      { itemStats: () => [{ stat: "Stat42", value: 10 }] },
+    );
+
+    expect(belly.bites[0]!.gain).toEqual([
+      { stat: 42, name: "Stat42", value: 30, base: 10 },
+    ]);
+    expect(belly.totals).toEqual([{ stat: 42, name: "Stat 42", value: 30 }]);
+    expect(belly.other).toEqual([]);
+  });
+
   it("reports an empty belly for runs without Niklas, and never throws", () => {
     const withNiklas = runs.filter((r) => trackBelly(r.battles, { itemStats }).present);
     expect(withNiklas.length).toBeGreaterThan(0);
