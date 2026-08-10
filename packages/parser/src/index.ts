@@ -6,6 +6,11 @@ export {
   snapshotBattle, diffSnapshots,
   type BattleSnapshot, type HeroSnapshot, type SnapshotDiff,
 } from "./diff.js";
+export {
+  trackBelly, statName, STAT_NAMES, NIKLAS_REF,
+  type BellyReport, type BellyBite, type BellyStat, type BellyAttribution,
+  type BellyOptions, type ItemStat,
+} from "./belly.js";
 export { extractSteamIds, scrubSteamIds } from "./scrub.js";
 export { pyRound } from "./pyround.js";
 

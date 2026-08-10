@@ -73,6 +73,19 @@ export class LiveGame {
     return this.dirty;
   }
 
+  /** Battles of the run the UI is showing — the open one, or the last closed
+   *  one right after it ends. Derivations that need catalog data (Niklas'
+   *  belly) run over these on the server side, where the catalog lives. */
+  runBattles(): Battle[] {
+    const open = this.assembler.currentRun();
+    const run = open ?? this.assembler.runs[this.assembler.runs.length - 1];
+    if (!run) return [];
+    // the assembler only pushes a battle once it closes, but the battle now
+    // being fought carries the freshest state — a bite shows up in its config
+    const inProgress = open ? this.assembler.currentBattle() : null;
+    return inProgress ? [...run.battles, inProgress] : run.battles;
+  }
+
   state(): LiveState {
     if (this.cached && !this.dirty) return this.cached;
     this.dirty = false;

@@ -100,6 +100,17 @@ function render(s) {
     html += `</div>`;
   }
 
+  if (s.belly?.present) {
+    const b = s.belly;
+    const last = b.bites[b.bites.length - 1];
+    html += `<div class="card"><div class="row">
+      <strong style="font-size:.9rem">Niklas' Belly</strong>
+      <span class="pill">${b.consumed} eaten</span>
+      ${b.totals.map((t) => `<span class="pill">+${t.value} ${esc(t.name)}</span>`).join("")}
+      <a class="small" href="/belly">details &amp; overlay →</a>
+    </div>${last ? `<div class="small">last: ${esc(last.item_name ?? last.item_ref ?? "?")}</div>` : ""}</div>`;
+  }
+
   if (s.names.relics.length) {
     html += `<div class="card"><span class="small">relics (${s.names.relics.length})</span><br>` +
       s.names.relics.map((r) => `${t("relic", r.ref)} ${esc(r.name)}`).join(" · ") + `</div>`;

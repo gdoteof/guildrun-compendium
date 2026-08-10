@@ -10,6 +10,7 @@
  *    whatever it has cached; missing tiers just render as no badge.
  */
 
+import type { ItemStat } from "@guildrun/parser";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { configDir } from "./paths.js";
@@ -25,7 +26,12 @@ export interface TierEntry {
 }
 export type TierMap = Record<string, Record<string, TierEntry>>; // entity_type -> ref -> entry
 
-export interface CatalogEntry { name: string; rarity: string | null }
+export interface CatalogEntry {
+  name: string;
+  rarity: string | null;
+  /** the game's own sheet data — item Stats, hero base stats, descriptions… */
+  meta?: { Stats?: { stat: string; value: number }[]; [k: string]: unknown };
+}
 export type Catalog = Record<string, Record<string, CatalogEntry>>;
 
 export class CompendiumClient {
@@ -84,6 +90,12 @@ export class CompendiumClient {
 
   rarity(type: string, ref: string): string | null {
     return this.catalog?.[type]?.[ref]?.rarity ?? null;
+  }
+
+  /** Item stats as the game sheets define them — what Niklas gains by eating it. */
+  itemStats(ref: string): ItemStat[] | null {
+    const stats = this.catalog?.item?.[ref]?.meta?.Stats;
+    return Array.isArray(stats) && stats.length ? stats : null;
   }
 
   refByName(type: string, name: string): string | null {

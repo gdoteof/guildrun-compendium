@@ -144,6 +144,7 @@ async function main(): Promise<void> {
   log     ${activeFile ?? "(none yet — waiting for the game to write one)"}
   saves   ${save ? paths.saveDir : "(not watching)"}
   ui      http://${host}:${port}/
+  belly   http://${host}:${port}/belly   (Niklas' Belly, pops out as an overlay)
 `);
 
   const shutdown = (): void => {

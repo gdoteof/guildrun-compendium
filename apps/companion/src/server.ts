@@ -9,7 +9,8 @@ import { createServer, type Server, type ServerResponse } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { UI_HTML } from "./ui-embedded.js";
+import { trackBelly, NIKLAS_REF, type BellyBite, type BellyReport } from "@guildrun/parser";
+import { UI_HTML, BELLY_HTML, STAT_ICONS_CSS } from "./ui-embedded.js";
 import type { LiveGame } from "./live.js";
 import type { CompendiumClient, TierMap } from "./compendium.js";
 import type { RunSaveWatcher } from "./runsave.js";
@@ -17,9 +18,22 @@ import { VERSION } from "./version.js";
 
 const UI_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "ui");
 
+/** A bite with the item named, for the Belly page. */
+export interface NamedBite extends BellyBite {
+  item_name: string | null;
+  rarity: string | null;
+}
+
+export interface BellyState extends Omit<BellyReport, "bites"> {
+  bites: NamedBite[];
+  /** Niklas is in the party right now (the belly survives the run ending) */
+  in_party: boolean;
+}
+
 export interface EnrichedState {
   live: ReturnType<LiveGame["state"]>;
   tiers: TierMap | null;
+  belly: BellyState;
   names: {
     party: { ref: string; name: string; rank: number | null; items: { ref: string; name: string; rarity: string | null }[] }[];
     relics: { ref: string; name: string; rarity: string | null }[];
@@ -81,9 +95,23 @@ export class CompanionServer {
     const { client } = this.deps;
     await client.getCatalog();
     const tiers = await client.getTiers(live.context.difficulty, live.context.floor_band);
+    // recomputed rather than cached with the live state: it needs the catalog,
+    // which may only have arrived after the first state was derived. O(battles).
+    const belly = trackBelly(this.deps.game.runBattles(), {
+      itemStats: (ref) => client.itemStats(ref),
+    });
     return {
       live,
       tiers,
+      belly: {
+        ...belly,
+        bites: belly.bites.map((b) => ({
+          ...b,
+          item_name: b.item_ref ? client.name("item", b.item_ref) : null,
+          rarity: b.item_ref ? client.rarity("item", b.item_ref) : null,
+        })),
+        in_party: live.party.some((h) => h.ref === NIKLAS_REF),
+      },
       names: {
         party: live.party.map((h) => ({
           ref: h.ref,
@@ -106,14 +134,22 @@ export class CompanionServer {
     };
   }
 
+  /** dev: live file for quick iteration; compiled binary: embedded copy */
+  private page(res: ServerResponse, file: string, embedded: string, type = "text/html"): void {
+    const diskCopy = join(UI_DIR, file);
+    res.writeHead(200, { "Content-Type": `${type}; charset=utf-8` });
+    res.end(existsSync(diskCopy) ? readFileSync(diskCopy) : embedded);
+  }
+
   private async route(url: string, res: ServerResponse): Promise<void> {
     const path = url.split("?")[0]!;
     try {
       if (path === "/" || path === "/index.html") {
-        // dev: live file for quick iteration; compiled binary: embedded copy
-        const diskCopy = join(UI_DIR, "index.html");
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(existsSync(diskCopy) ? readFileSync(diskCopy) : UI_HTML);
+        this.page(res, "index.html", UI_HTML);
+      } else if (path === "/belly" || path === "/belly.html") {
+        this.page(res, "belly.html", BELLY_HTML);
+      } else if (path === "/stat-icons.css") {
+        this.page(res, "stat-icons.css", STAT_ICONS_CSS, "text/css");
       } else if (path === "/state") {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(await this.enriched()));

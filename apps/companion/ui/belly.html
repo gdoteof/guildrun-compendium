@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Niklas' Belly</title>
+<!-- the game's own stat glyphs, lifted from its StatsIconAtlas -->
+<link rel="stylesheet" href="/stat-icons.css">
+<style>
+/* Trimmed copy of the compendium's validated palette (see apps/worker/public/style.css) */
+:root {
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --border:rgba(11,11,11,.1); --accent:#2a78d6; --good:#006300; --bad:#d03b3b;
+  --rar-Epic:#8a3612; --rar-Rare:#d95926; --rar-Common:#f0916b;
+}
+@media (prefers-color-scheme: dark) { :root {
+  color-scheme: dark;
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --border:rgba(255,255,255,.1); --accent:#3987e5; --good:#0ca30c; --bad:#e66767;
+  --rar-Epic:#f7b697; --rar-Rare:#eb6834; --rar-Common:#a8431a;
+}}
+*{box-sizing:border-box} body{margin:0;background:var(--page);color:var(--ink);
+  font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:1rem 1.2rem}
+h1{font-size:1.05rem;margin:0} .small{color:var(--muted);font-size:.82rem}
+a{color:var(--accent)}
+.head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:.7rem 0}
+.tiles{display:flex;gap:8px;flex-wrap:wrap}
+.tile{background:var(--surface);border:1px solid var(--grid);border-radius:8px;padding:4px 10px;min-width:5.5rem}
+.tile b{display:block;font-size:1.15rem;font-variant-numeric:tabular-nums;line-height:1.25}
+.tile span{color:var(--muted);font-size:.72rem;text-transform:lowercase}
+.rar{font-size:.78rem;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+td,th{padding:3px 8px;border-bottom:1px solid var(--grid);text-align:left;vertical-align:baseline}
+th{color:var(--muted);font-weight:500;font-size:.76rem}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.gain{color:var(--good);font-variant-numeric:tabular-nums}
+.amp{color:var(--accent);font-size:.78rem;font-weight:650}
+button{font:inherit;font-size:.82rem;padding:2px 10px;border-radius:999px;cursor:pointer;
+  background:var(--surface);color:var(--ink);border:1px solid var(--grid)}
+button:hover{border-color:var(--accent);color:var(--accent)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:5px}
+.dot.ok{background:var(--good)}
+
+/* Overlay mode: a HUD drawn straight onto the game — no panel, no card
+   backings, nothing but glyphs and numbers. Legibility over arbitrary game art
+   comes from a text shadow rather than a backdrop, so the game stays visible
+   through every gap. (The native overlay can toggle .scrim below when a bright
+   scene needs help.) Also narrow enough that nothing needs horizontal room it
+   hasn't got. */
+body.overlay{padding:6px 8px;font-size:13px;background:transparent;
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.95), 0 0 4px rgba(0,0,0,.8), 0 0 8px rgba(0,0,0,.5)}
+body.overlay .card{margin:.35rem 0;padding:0;background:transparent;border:0}
+body.overlay .tile{background:transparent;border:0}
+body.overlay .small,body.overlay th{color:#d7d5cc}
+body.overlay td,body.overlay tr{border-color:rgba(255,255,255,.14)}
+body.overlay .gain{color:#7ee787}
+body.overlay .amp{color:#79c0ff}
+/* readability escape hatch, toggled from the menu bar */
+body.overlay.scrim{background:rgba(0,0,0,.5);border-radius:10px}
+body.overlay h1{font-size:.95rem}
+body.overlay .hide-overlay{display:none}
+/* The dot already says live/reconnecting, and a HUD has no room for a word that
+   repeats it. Hiding it also keeps the one piece of text on this page that is
+   edited IN PLACE off the overlay: WebKitGTK repaints a changed text node
+   without clearing under it when the background is transparent, so "connecting"
+   -> "live" renders as "livenecting". Everything else here is rebuilt through
+   innerHTML, which repaints cleanly — keep it that way. */
+body.overlay #status-text{display:none}
+body.overlay .tiles{gap:5px}
+body.overlay .tile{min-width:0;padding:2px 7px}
+body.overlay .tile b{font-size:.95rem}
+body.overlay .tile span{font-size:.68rem}
+body.overlay .shards{display:none}   /* the summary tile already has the total */
+/* a table needs more width than an overlay has: one bite per block instead,
+   with the stats gained on their own line under the item */
+body.overlay table{font-size:.8rem;display:block}
+body.overlay thead{display:none}
+body.overlay tbody{display:block}
+body.overlay tr{display:grid;grid-template-columns:auto auto 1fr;column-gap:6px;
+  padding:2px 0;border-bottom:1px solid var(--grid)}
+body.overlay td{display:block;border:0;padding:0}
+body.overlay td:nth-child(4){grid-column:1/-1}
+</style>
+</head>
+<body>
+<div id="panel">
+  <div class="head">
+    <h1>Niklas' Belly</h1>
+    <span class="small" id="status"><span class="dot"></span><span id="status-text">connecting</span></span>
+    <span style="flex:1"></span>
+    <button id="pop" class="hide-overlay" title="Float this panel on top of the game">Pop out overlay</button>
+  </div>
+  <p class="small hide-overlay" id="sub">
+    Every item Niklas eats, and what it permanently gave him
+    (<a href="/">back to the companion</a>).
+  </p>
+  <div id="app"></div>
+</div>
+
+<script>
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const rar = (r) => r ? `<span class="rar" style="color:var(--rar-${esc(r)})">${esc(r[0])}</span>` : "";
+const n = (v) => Number.isInteger(v) ? v : Math.round(v * 100) / 100;
+// an item can grant more (or less) than it prints — Deadeye Hood triples its own
+// stats, Assassin's Hood accumulates crit — so say so when the two differ
+const amp = (s) => {
+  const ratio = s.value / s.base;
+  const whole = Math.abs(ratio - Math.round(ratio)) < 0.01 && Math.round(ratio) >= 2;
+  return `<span class="amp" title="the item prints ${n(s.base)}">${
+    whole ? "&times;" + Math.round(ratio) : "base " + n(s.base)}</span>`;
+};
+// icons are keyed by the log's own stat enum id — no name matching at runtime
+const icon = (stat) => `<i class="icon icon-stat-${stat}"></i>`;
+const statList = (stats) => stats.map((s) =>
+  `<span class="gain">+${n(s.value)}</span> ${icon(s.stat)}${esc(s.name)}` +
+  `${s.base !== undefined ? " " + amp(s) : ""}`
+).join(", ");
+
+if (new URLSearchParams(location.search).get("overlay") === "1") document.body.classList.add("overlay");
+
+// held as node references, not looked up per render: popping out MOVES these
+// nodes into the picture-in-picture document, where getElementById on this
+// document would no longer find them
+const panel = document.getElementById("panel");
+const app = document.getElementById("app");
+
+function render(s) {
+  const b = s.belly;
+
+  if (!b.present) {
+    app.innerHTML = `<div class="card"><p class="small">No Niklas in this run.
+      Recruit him and every item he eats shows up here — he consumes his left-most
+      item after each combat he survives, keeping its stats for good.</p></div>`;
+    return;
+  }
+
+  let html = `<div class="tiles">
+    <div class="tile"><b>${b.consumed}</b><span>items eaten</span></div>
+    <div class="tile"><b>${n(b.shards_generated)}</b>
+      <span><i class="icon icon-shard"></i>generated</span></div>` +
+    b.totals.map((t) => `<div class="tile"><b>+${n(t.value)}</b>
+      <span>${icon(t.stat)}${esc(t.name)}</span></div>`).join("") +
+    `</div>`;
+
+  if (b.bites.length) {
+    html += `<div class="card"><table><thead><tr>
+        <th class="num">#</th><th class="num">floor</th><th>item</th><th>gained</th>
+        <th class="num shards"><i class="icon icon-shard"></i></th>
+      </tr></thead><tbody>` +
+      b.bites.slice().reverse().map((x) => `<tr>
+        <td class="num">${x.index}</td>
+        <td class="num">${x.floor ?? "–"}</td>
+        <td>${esc(x.item_name ?? x.item_ref ?? "unknown item")} ${rar(x.rarity)}</td>
+        <td>${x.gain.length ? statList(x.gain) : '<span class="small">no stats</span>'}</td>
+        <td class="num shards">${x.shards ?? "–"}</td>
+      </tr>`).join("") + `</tbody></table></div>`;
+  } else {
+    html += `<div class="card"><p class="small">Nothing eaten yet — he needs an item in his
+      left-most slot and a combat he survives.</p></div>`;
+  }
+
+  if (b.other.length) {
+    html += `<p class="small hide-overlay">Also gained permanently from other sources
+      (rank modifiers, relics, events), not from the belly: ${statList(b.other)}.</p>`;
+  }
+  if (!b.in_party && b.consumed) {
+    html += `<p class="small">Niklas is no longer in the party — showing the belly as it stood.</p>`;
+  }
+  html += `<p class="small hide-overlay">A bite is logged with the next battle's state,
+    so the newest one appears when the following battle starts.</p>`;
+
+  app.innerHTML = html;
+}
+
+function connect() {
+  const es = new EventSource("/events");
+  const dot = document.querySelector("#status .dot");
+  const label = document.getElementById("status-text");
+  es.onopen = () => { dot.classList.add("ok"); label.textContent = "live"; };
+  es.onmessage = (e) => render(JSON.parse(e.data));
+  es.onerror = () => {
+    dot.classList.remove("ok");
+    label.textContent = "reconnecting";
+    // EventSource retries on its own; nothing else to do
+  };
+}
+connect();
+
+/**
+ * Overlay: a document Picture-in-Picture window floats above every other
+ * window — including a borderless-fullscreen game — with no injection, no
+ * native code and no extra process. The panel is *moved* into it, so the one
+ * live EventSource keeps feeding it. Browsers without the API get a popup
+ * window instead (always-on-top is then the window manager's job).
+ */
+document.getElementById("pop").addEventListener("click", async () => {
+  if (!window.documentPictureInPicture) {
+    window.open("/belly?overlay=1", "niklas-belly", "popup,width=380,height=520");
+    return;
+  }
+  const pip = await documentPictureInPicture.requestWindow({ width: 380, height: 520 });
+  for (const sheet of document.styleSheets) {
+    try {
+      const style = pip.document.createElement("style");
+      style.textContent = [...sheet.cssRules].map((r) => r.cssText).join("");
+      pip.document.head.appendChild(style);
+    } catch {
+      // a sheet we can't read the rules of (not expected — everything here is
+      // same-origin — but a <link> clone gets the icons across either way)
+      if (sheet.ownerNode) pip.document.head.appendChild(sheet.ownerNode.cloneNode(true));
+    }
+  }
+  pip.document.title = "Niklas' Belly";
+  pip.document.body.classList.add("overlay");
+  pip.document.body.appendChild(panel);
+  const placeholder = document.createElement("p");
+  placeholder.className = "small";
+  placeholder.textContent = "Niklas' Belly is floating in the overlay window — close it to bring it back.";
+  document.body.appendChild(placeholder);
+  pip.addEventListener("pagehide", () => {
+    placeholder.remove();
+    document.body.appendChild(panel);
+  });
+});
+</script>
+</body>
+</html>
