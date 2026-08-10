@@ -19,3 +19,4 @@ apps/companion/ui/stat-icons.css
 venv/
 __pycache__/
 .secrets.production
+.gstack/
